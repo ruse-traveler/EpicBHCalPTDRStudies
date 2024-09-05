@@ -14,6 +14,8 @@ the ePIC pTDR. It is structured like so:
     to calibrate the energy of BHCal+BIC clusters.
   - `plotting`: this directory holds various ROOT macros
     used to generate plots.
+  - `utility`: this directory holds a variety of useful tools
+    like the `eic-build` script.
 
 **NOTE:** the code here will eventually be integrated into a
 repository under the [eic GitHub organization](https://github.com/eic).
