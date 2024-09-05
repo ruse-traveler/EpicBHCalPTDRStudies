@@ -1,0 +1,3 @@
+# TODO: convert to ruby script and allow for arguments
+
+source /opt/detector/epic-24.08.0/bin/thisepic.sh
