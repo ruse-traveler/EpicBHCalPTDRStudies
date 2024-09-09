@@ -62,6 +62,65 @@ struct Options {
 // ============================================================================
 void FillBHCalCalibrationTuple(const Options& opt = DefaultOptions) {
 
+  // --------------------------------------------------------------------------
+  // calculation parameters
+  // --------------------------------------------------------------------------
+
+  // define helper & output variables
+  NTupleHelper helper({
+    "ePar",
+    "fracParVsLeadBHCal",
+    "fracParVsLeadBEMC",
+    "fracParVsSumBHCal",
+    "fracParVsSumBEMC",
+    "fracLeadBHCalVsBEMC",
+    "fracSumBHCalVsBEMC",
+    "eLeadBHCal",
+    "eLeadBEMC",
+    "eSumBHCal",
+    "eSumBEMC",
+    "diffLeadBHCal",
+    "diffLeadBEMC",
+    "diffSumBHCal",
+    "diffSumBEMC",
+    "nHitsLeadBHCal",
+    "nHitsLeadBEMC",
+    "nClustBHCal",
+    "nClustBEMC",
+    "hLeadBHCal",
+    "hLeadBEMC",
+    "fLeadBHCal",
+    "fLeadBEMC",
+    "eLeadImage",
+    "eSumImage",
+    "eLeadSciFi",
+    "eSumSciFi",
+    "nClustImage",
+    "nClustSciFi",
+    "hLeadImage",
+    "hLeadSciFi",
+    "fLeadImage",
+    "fLeadSciFi",
+    "eSumSciFiLayer1",
+    "eSumSciFiLayer2",
+    "eSumSciFiLayer3",
+    "eSumSciFiLayer4",
+    "eSumSciFiLayer5",
+    "eSumSciFiLayer6",
+    "eSumSciFiLayer7",
+    "eSumSciFiLayer8",
+    "eSumSciFiLayer9",
+    "eSumSciFiLayer10",
+    "eSumSciFiLayer11",
+    "eSumSciFiLayer12",
+    "eSumImageLayer1",
+    "eSumImageLayer2",
+    "eSumImageLayer3",
+    "eSumImageLayer4",
+    "eSumImageLayer5",
+    "eSumImageLayer6"
+  });
+
   // announce start of macro
   std::cout << "\n  Beginning calibration tuple-filling macro!" << std::endl;
 
@@ -85,6 +144,9 @@ void FillBHCalCalibrationTuple(const Options& opt = DefaultOptions) {
             << "      input file  = " << opt.in_file << "\n"
             << "      output file = " << opt.out_file
             << std::endl;
+
+  // create output ntuple
+  TNtuple* ntForClalib = new TNtuple("ntForCalib", "NTuple for calibration", helper.CompressVariables().c_str());
 
   // --------------------------------------------------------------------------
   // Loop over input frames
@@ -170,8 +232,9 @@ void FillBHCalCalibrationTuple(const Options& opt = DefaultOptions) {
   std::cout << "    Finished frame loop" << std::endl;
 
   // save output & close files
-  output -> cd();
-  output -> Close();
+  output     -> cd();
+  ntForCalib -> Write();
+  output     -> Close();
 
   // announce end & exit
   std::cout << "  End of macro!\n" << std::endl;
