@@ -27,6 +27,8 @@
 // edm4eic types
 #include <edm4eic/ClusterCollection.h>
 #include <edm4eic/ReconstructedParticleCollection.h>
+// analysis utilities
+#include "../../utilities/NTupleHelper.hxx"
 
 
 
@@ -52,56 +54,6 @@ struct Options {
   "EcalBarrelImagingLayers",
   true
 };
-
-
-
-// ============================================================================
-//! Small class to manage output
-// ============================================================================
-class Output {
-
-  private:
-
-    // data members
-    std::vector<std::string> m_variables;
-    std::vector<float>       m_values;
-
-  public:
-
-    // --------------------------------------------------------------------------
-    //! Compress list of variables into a colon-seperated list
-    // --------------------------------------------------------------------------
-    inline std::string CompressVariables() const {
-
-      std::string compressed("");
-      for (
-        std::size_t iVariable = 0;
-        iVariable < m_variables.size();
-        ++iVariable
-      ) {
-        compressed.append(m_variables[iVariable] );
-        if (iVariable + 1 != m_variables.size()) {
-          compressed.append(":");
-        }
-      }
-      return compressed;
-
-    }  // end 'CompressVariables()'
-
-    // ------------------------------------------------------------------------
-    // Access values
-    // -----------------------------------------------------------------------
-    inline std::vector<float> GetValues() const {
-
-      return m_values;
-
-    }  // end 'GetValues()'
-
-    // ctor/dtor
-    Output()  {};
-    ~Output() {};
-
-};  // end Output
 
 
 
