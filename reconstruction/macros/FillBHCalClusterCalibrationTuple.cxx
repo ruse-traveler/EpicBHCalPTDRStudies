@@ -28,16 +28,6 @@
 #include <edm4eic/ClusterCollection.h>
 #include <edm4eic/ReconstructedParticleCollection.h>
 
-  // TODO REMOVE ME
-  // global constants
-  enum CONST {
-    NCalibVars  = 51,
-    NSciFiLayer = 12,
-    NImageLayer = 4,
-    NRange      = 2,
-    NComp       = 3
-  };
-
 
 
 // ============================================================================
