@@ -12,9 +12,11 @@
 
 // c++ utilities
 #include <map>
+#include <limits>
 #include <string>
 #include <vector>
 #include <cassert>
+#include <algorithm>
 // root libraries
 #include <TNtuple.h>
 
@@ -58,6 +60,20 @@ class NTupleHelper {
       return;
 
     }  // end 'SetVariable(std::string&, float)'
+
+    // ------------------------------------------------------------------------
+    //! Reset values
+    // ------------------------------------------------------------------------
+    inline void ResetValues() {
+
+      std::fill(
+        m_values.begin(),
+        m_values.end(),
+        -1. * std::numeric_limits<float>::max()
+      );
+      return;      
+
+    }  // end 'ResetValues()'
 
     // ------------------------------------------------------------------------
     //! Compress list of variables into a colon-seperated list
