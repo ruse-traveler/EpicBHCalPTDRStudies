@@ -143,6 +143,22 @@ class TMVAHelper {
     }  // end 'GenerateListOfTargers()'
 
     // ------------------------------------------------------------------------
+    //! Helper method to check if a file exists or not
+    // ------------------------------------------------------------------------
+    inline bool DoesFileExist(const std::string& name) const {
+
+      bool exists;
+      if (FILE* file = fopen(name.c_str(), "r")) {
+        fclose(file);
+        exists = true;
+      } else {
+        exists = false;
+      }
+      return exists;
+
+    }  // end 'DoesFileExist(std::string)'
+
+    // ------------------------------------------------------------------------
     //! Helper method to compress vector of strings into a colon-separated list
     // ------------------------------------------------------------------------
     inline std::string CompressList(const std::vector<std::string>& strings) const {
@@ -253,23 +269,16 @@ class TMVAHelper {
      *  by `directory`. If the file exists, helper will book the method to be
      *  evaulated with that file.
      */
-    inline void BookMethodsToRead(TMVA::Reader* reader, const std::string& directory) {
+    inline void BookMethodsToRead(TMVA::Reader* reader, const std::string& directory, const std::string& name) {
 
-      // lambda to check if a file exists or not
-      auto exists = [](const std::string& name) {
-        if (FILE* file = fopen(name.c_str(), "r")) {
-          fclose(file);
-          return true;
-        } else {
-          return false;
-        }
-      };
-
+      // loop over all methods
       for (const std::string& method : m_methods) {
 
-        // construct full path, skip if file does not exist
-        const std::string path = directory + "/" + method + ".weights.xml";
-        if (!exists(path)) {
+        // construct full path
+        const std::string path = directory + "/weights/" + name + "_" + method + ".weights.xml";
+
+        // skip if file does not exist
+        if (!DoesFileExist(path)) {
           std::cerr << "WARNING: file '" << path << "' doesn't exist! Not booking method!" << std::endl;
           continue;
         }
@@ -278,10 +287,43 @@ class TMVAHelper {
         const std::string title = method + " method";
         reader -> BookMVA(title, path);
 
+      }  // end method loop
+      return;
+
+    }  // end 'BookMethodsToRead(TMVA::Reader*, std::string&, std::string&)'
+
+    // ------------------------------------------------------------------------
+    //! Book methods to read by providing a list of weight files
+    // ------------------------------------------------------------------------
+    /*! For file passed, helper wil check if file exists and, if it does,
+     *  book the corresponding method to be evaluated with that file. This
+     *  assumes that the insertion order is the same between the methods
+     *  list and the provided list of files.
+     */
+    inline void BookMethodsToRead(TMVA::Reader* reader, const std::vector<std::string>& files) {
+
+      // make sure input list has same dimension as method list
+      if (files.size() != m_methods.size()) {
+        assert(files.size() == m_methods.size());
+      }
+
+      // loop over provided files
+      for (std::size_t iFile = 0; iFile < files.size(); ++iFile) {
+
+        // skip if file does not exist
+        if (!DoesFileExist(files[iFile])) {
+          std::cerr << "WARNING: file '" << files[iFile] << "' doesn't exist! Not booking method '" << m_methods.at(iFile) <<"'!" << std::endl;
+          continue;
+        }
+
+        // otherwise, construct title and book method
+        const std::string title = m_methods.at(iFile) + " method";
+        reader -> BookMVA(title, files[iFile]);
+
       }
       return;
 
-    }  // end 'BookMethodsToRead(TMVA::Reader*, directory)'
+    }  // end 'BookMethodsToRead(TMVA::Reader*, std::vector<std::string>&)'
 
     // ------------------------------------------------------------------------
     //! Default ctor/dtor
