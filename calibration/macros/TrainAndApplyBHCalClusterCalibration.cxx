@@ -29,8 +29,8 @@
 #include <TMVA/DataLoader.h>
 #include <TMVA/TMVARegGui.h>
 // analysis utilities
-#include "TMVAHelper.hxx"
-#include "NTupleHelper.hxx"
+#include "../../utility/TMVAHelper.hxx"
+#include "../../utility/NTupleHelper.hxx"
 
 
 
@@ -124,11 +124,11 @@ void TrainAndApplyBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   //     (e.g. FDA_GA needs a function to work)
   const std::vector<std::string> vecMethods = {
     "LD",
-//    "KNN",
+    "KNN",
     "MLP",
-    "BDTG"
-//    "FDA_GA",
-//    "PDEFoam"
+    "BDTG",
+    "FDA_GA",
+    "PDEFoam"
   };
 
   // general tmva options
