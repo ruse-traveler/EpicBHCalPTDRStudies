@@ -21,18 +21,18 @@
 // tmva components
 #include <TMVA/Types.h>
 // analysis utilities
-#include "TMVAHelper.hxx"
+#include "../../utility/TMVAHelper.hxx"
 
 
 
 // ============================================================================
 //! Cluster TMVA Parameters
 // ============================================================================
-/*! TODO clean up a couple places to make slightly more readable
- */ 
 namespace TMVAClusterParameters {
 
-  // input variables & usage
+  // --------------------------------------------------------------------------
+  // Input variables & their usage
+  // --------------------------------------------------------------------------
   const std::vector<std::pair<TMVAHelper::Use, std::string>> vecUseAndVar = {
     {TMVAHelper::Use::Target, "ePar"},
     {TMVAHelper::Use::Watch, "fracParVsLeadBHCal"},
@@ -87,65 +87,213 @@ namespace TMVAClusterParameters {
     {TMVAHelper::Use::Train, "eSumImageLayer6"}
   };
 
-  // methods to use and options
-  const std::vector<std::pair<std::string, std::string>> vecMethodAndOpt = {
-    {
-      "LD",
-      "!H:!V:VarTransform=None"
-    },
-    {
-      "KNN",
-      "nkNN=20:ScaleFrac=0.8:SigmaFact=1.0:Kernel=Gaus:UseKernel=F:UseWeight=T:!Trim"
-    },
-    {
-      "MLP",
-      "!H:!V:VarTransform=Norm:NeuronType=tanh:NCycles=20000:HiddenLayers=N+20:TestRate=6:TrainingMethod=BFGS:Sampling=0.3:SamplingEpoch=0.8:ConvergenceImprove=1e-6:ConvergenceTests=15:!UseRegulator"
-    },
-    {
-      "BDTG",
-      "!H:!V:NTrees=2000::BoostType=Grad:Shrinkage=0.1:UseBaggedBoost:BaggedSampleFraction=0.5:nCuts=20:MaxDepth=3:MaxDepth=4"
-    },
-    {
-      "FDA_GA",
-      "!H:!V:Formula=(0)+(1)*x0+(2)*x1:ParRanges=(-100,100);(-100,100);(-100,100):FitMethod=GA:PopSize=100:Cycles=3:Steps=30:Trim=True:SaveBestGen=1:VarTransform=Norm"
-    }
+  // --------------------------------------------------------------------------
+  //! List of methods to use
+  // --------------------------------------------------------------------------
+  const std::vector<std::string> vecMethodsToUse = {
+    "LD",
+    "KNN",
+    "MLP",
+    "BDTG",
+    "FDA_GA"
   };
 
-  // general tmva options
-  const std::vector<std::string> vecFactoryOpts = {
+  // --------------------------------------------------------------------------
+  //! Cuts to apply when training
+  // -------------------------------------------------------------------------
+  const TCut trainCut(
+    "(eSumBHCal>=0)&&"
+    "(eSumBEMC>=0)&&"
+    "(abs(hLeadBHCal)<1.1)&&"
+    "(abs(hLeadBEMC)<1.1)"
+  );
+
+  // --------------------------------------------------------------------------
+  //! Cuts to apply while reading input tuple
+  // --------------------------------------------------------------------------
+  const TCut readCut(
+    "(eLeadBEMC>0.5)&&"
+    "(eLeadBEMC<100)"
+  );
+
+  // --------------------------------------------------------------------------
+  // General TMVA options
+  // --------------------------------------------------------------------------
+  std::vector<std::string> vecFactoryOpts = {
     "!V",
-    "!Silent",
     "Color",
-    "DrawProgressBar",
     "AnalysisType=Regression"
   };
-  const std::vector<std::string> vecTrainOpts = {
+
+  // --------------------------------------------------------------------------
+  //! Training options
+  // --------------------------------------------------------------------------
+  std::vector<std::string> vecTrainOpts = {
     "nTrain_Regression=100",
     "nTest_Regression=0",
     "SplitMode=Random:NormMode=NumEvents",
     "!V"
   };
-  const std::vector<std::string> vecReadOpts = {
+
+  // --------------------------------------------------------------------------
+  //! Reading options
+  // --------------------------------------------------------------------------
+  std::vector<std::string> vecReadOpts = {
     "!Color",
-    "!Silent"
   };
 
-  // other tmva options
+  // --------------------------------------------------------------------------
+  // Misc other options
+  // -------------------------------------------------------------------------
   const bool  addSpectators(false);
   const float treeWeight(1.0);
-  const TCut  trainCut("(eSumBHCal>=0)&&(eSumBEMC>=0)&&(abs(hLeadBHCal)<1.1)&&(abs(hLeadBEMC)<1.1)");
-  const TCut  readCut("(eLeadBEMC>0.5)&&(eLeadBEMC<100)");
+
+
+
+  // --------------------------------------------------------------------------
+  // Set method-specific options
+  // --------------------------------------------------------------------------
+  /*! This method is used to define what options to use
+   *  with each method. Which methods are actually used
+   *  are defined by vecMethodsToUse above.
+   */
+  std::map<std::string, std::vector<std::string>> SetMethodOptions() {
+
+    std::map<std::string, std::vector<std::string>> mapMethodToOpt;
+    {
+
+      // BDTG algorithm
+      mapMethodToOpt["BDTG"] = {
+        "!H",
+        "!V",
+        "NTrees=2000",
+        "BoostType=Grad",
+        "Shrinkage=0.1",
+        "UseBaggedBoost",
+        "BaggedSampleFraction=0.5",
+        "nCuts=20",
+        "MaxDepth=3",
+        "MaxDepth=4"
+      };
+
+      // FDA (GA) algorithm
+      mapMethodToOpt["FDA_GA"] = {
+        "!H",
+        "!V",
+        "Formula=(0)+(1)*x0+(2)*x1",
+       "ParRanges=(-100,100);(-100,100);(-100,100)",
+        "FitMethod=GA",
+        "PopSize=100",
+        "Cycles=3",
+        "Steps=30",
+        "Trim=True",
+        "SaveBestGen=1",
+        "VarTransform=Norm"
+      };
+
+      // kNN algorithm
+      mapMethodToOpt["KNN"] = {
+        "nkNN=20",
+        "ScaleFrac=0.8",
+        "SigmaFact=1.0",
+        "Kernel=Gaus",
+        "UseKernel=F",
+        "UseWeight=T",
+        "!Trim"
+      };
+
+      // LD algorithm
+      mapMethodToOpt["LD"] = {
+        "!H",
+        "!V",
+        "VarTransform=None"
+      };
+
+      // MLP algorithm
+      mapMethodToOpt["MLP"] = {
+        "!H",
+        "!V",
+        "VarTransform=Norm",
+        "NeuronType=tanh",
+        "NCycles=20000",
+        "HiddenLayers=N+20",
+        "TestRate=6",
+        "TrainingMethod=BFGS",
+        "Sampling=0.3",
+        "SamplingEpoch=0.8",
+        "ConvergenceImprove=1e-6",
+        "ConvergenceTests=15",
+        "!UseRegulator"
+      };
+
+      // PDE Foam algorithm
+      //   - FIXME these options haven't
+      //     worked for the test cases
+      //     yet...
+      mapMethodToOpt["PDEFoam"] = {
+        "!H:",
+        "!V:",
+        "MultiTargetRegression=F",
+        "TargetSelection=Mpv",
+        "TailCut=0.001",
+        "VolFrac=0.0666",
+        "nActiveCells=500",
+        "nSampl=2000",
+        "nBin=5",
+        "Compress=T",
+        "Kernel=None",
+        "Nmin=10",
+        "VarTransform=None"
+      };
+
+    }  // end option setting
+    return mapMethodToOpt;
+
+  }  // end 'SetMethodOptions()'
+
+
+
+  // --------------------------------------------------------------------------
+  //! Collect methods to use and their options into a list of pairs
+  // --------------------------------------------------------------------------
+  std::vector<std::pair<std::string, std::string>> GetMethodsAndOptions() {
+
+    // set method-specific options
+    std::map<std::string, std::vector<std::string>> mapMethodToOpt = SetMethodOptions();
+
+    // then collect into list of pairs
+    std::vector<std::pair<std::string, std::string>> vecMethodAndOpt;
+    for (const std::string& method : vecMethodsToUse) {
+      vecMethodAndOpt.push_back(
+        {method, TMVAHelper::CompressList( mapMethodToOpt[method] )}
+      );
+    }
+    return vecMethodAndOpt;    
+
+  }  // end 'GetMethodsAndOptions()'
 
 
 
   // --------------------------------------------------------------------------
   //! Collect options into parameter struct
   // --------------------------------------------------------------------------
-  TMVAHelper::Parameters GetParameters() {
+  TMVAHelper::Parameters GetParameters(const bool do_progress = true) {
 
+    // add options relevant for verbosity
+    if (do_progress) {
+      vecFactoryOpts.push_back("!Silent");
+      vecFactoryOpts.push_back("DrawProgressBar");
+      vecReadOpts.push_back("!Silent");
+    } else {
+      vecFactoryOpts.push_back("Silent");
+      vecFactoryOpts.push_back("!DrawProgressBar");
+      vecReadOpts.push_back("Silent");
+    }
+
+    // collect options
     TMVAHelper::Parameters param {
       .variables      = vecUseAndVar,
-      .methods        = vecMethodAndOpt,
+      .methods        = GetMethodsAndOptions(),
       .opts_factory   = vecFactoryOpts,
       .opts_training  = vecTrainOpts,
       .opts_reading   = vecReadOpts,
@@ -156,7 +304,7 @@ namespace TMVAClusterParameters {
     };
     return param;
 
-  }  // end 'GetParameters()'
+  }  // end 'GetParameters(bool)'
 
 }  // end TMVAClusterParameters namespace
 

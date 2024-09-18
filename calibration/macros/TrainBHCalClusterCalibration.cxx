@@ -59,8 +59,10 @@ struct Options {
 // ============================================================================
 void TrainBHCalClusterCalibration(const Options& opt = DefaultOptions) {
 
-  // grab calculation parameters
-  TMVAHelper::Parameters param = TMVAClusterParameters::GetParameters();
+  // --------------------------------------------------------------------------
+  // Grab calculation parameters
+  // --------------------------------------------------------------------------
+  TMVAHelper::Parameters param = TMVAClusterParameters::GetParameters(opt.do_progress);
 
   // lower verbosity & announce start
   gErrorIgnoreLevel = kError;
