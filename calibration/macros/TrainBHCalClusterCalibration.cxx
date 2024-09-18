@@ -28,6 +28,7 @@
 #include <TMVA/Factory.h>
 #include <TMVA/DataLoader.h>
 // analysis utilities
+#include "TMVAClusterParameters.hxx"
 #include "../../utility/TMVAHelper.hxx"
 
 
@@ -58,101 +59,12 @@ struct Options {
 // ============================================================================
 void TrainBHCalClusterCalibration(const Options& opt = DefaultOptions) {
 
-  // --------------------------------------------------------------------------
-  // calculation parameters
-  // --------------------------------------------------------------------------
-
-  // input variables & usage
-  const std::vector<std::pair<TMVAHelper::Use, std::string>> vecUseAndVar = {
-    {TMVAHelper::Use::Target, "ePar"},
-    {TMVAHelper::Use::Watch, "fracParVsLeadBHCal"},
-    {TMVAHelper::Use::Watch, "fracParVsLeadBEMC"},
-    {TMVAHelper::Use::Watch, "fracParVsSumBHCal"},
-    {TMVAHelper::Use::Watch, "fracParVsSumBEMC"},
-    {TMVAHelper::Use::Watch, "fracLeadBHCalVsBEMC"},
-    {TMVAHelper::Use::Watch, "fracSumBHCalVsBEMC"},
-    {TMVAHelper::Use::Train, "eLeadBHCal"},
-    {TMVAHelper::Use::Train, "eLeadBEMC"},
-    {TMVAHelper::Use::Watch, "eSumBHCal"},
-    {TMVAHelper::Use::Watch, "eSumBEMC"},
-    {TMVAHelper::Use::Watch, "diffLeadBHCal"},
-    {TMVAHelper::Use::Watch, "diffLeadBEMC"},
-    {TMVAHelper::Use::Watch, "diffSumBHCal"},
-    {TMVAHelper::Use::Watch, "diffSumBEMC"},
-    {TMVAHelper::Use::Watch, "nHitsLeadBHCal"},
-    {TMVAHelper::Use::Watch, "nHitsLeadBEMC"},
-    {TMVAHelper::Use::Watch, "nClustBHCal"},
-    {TMVAHelper::Use::Watch, "nClustBEMC"},
-    {TMVAHelper::Use::Watch, "hLeadBHCal"},
-    {TMVAHelper::Use::Watch, "hLeadBEMC"},
-    {TMVAHelper::Use::Watch, "fLeadBHCal"},
-    {TMVAHelper::Use::Watch, "fLeadBEMC"},
-    {TMVAHelper::Use::Watch, "eLeadImage"},
-    {TMVAHelper::Use::Watch, "eSumImage"},
-    {TMVAHelper::Use::Watch, "eLeadScFi"},
-    {TMVAHelper::Use::Watch, "eSumScFi"},
-    {TMVAHelper::Use::Watch, "nClustImage"},
-    {TMVAHelper::Use::Watch, "nClustScFi"},
-    {TMVAHelper::Use::Watch, "hLeadImage"},
-    {TMVAHelper::Use::Watch, "hLeadScFi"},
-    {TMVAHelper::Use::Watch, "fLeadImage"},
-    {TMVAHelper::Use::Watch, "fLeadScFi"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer1"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer2"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer3"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer4"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer5"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer6"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer7"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer8"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer9"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer10"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer11"},
-    {TMVAHelper::Use::Train, "eSumScFiLayer12"},
-    {TMVAHelper::Use::Train, "eSumImageLayer1"},
-    {TMVAHelper::Use::Watch, "eSumImageLayer2"},
-    {TMVAHelper::Use::Train, "eSumImageLayer3"},
-    {TMVAHelper::Use::Train, "eSumImageLayer4"},
-    {TMVAHelper::Use::Watch, "eSumImageLayer5"},
-    {TMVAHelper::Use::Train, "eSumImageLayer6"}
-  };
-
-  // methods to use
-  //   - TODO might be good to add field for method-specific options
-  //     (e.g. FDA_GA needs a function to work)
-  const std::vector<std::string> vecMethods = {
-    "LD",
-    "KNN",
-    "MLP",
-    "BDTG",
-    "FDA_GA",
-    "PDEFoam"
-  };
-
-  // general tmva options
-  const std::vector<std::string> vecFactoryOpts = {
-    "!V",
-    "!Silent",
-    "Color",
-    "DrawProgressBar",
-    "AnalysisType=Regression"
-  };
-  const std::vector<std::string> vecTrainOpts = {
-    "nTrain_Regression=100",
-    "nTest_Regression=0",
-    "SplitMode=Random:NormMode=NumEvents",
-    "!V"
-  };
-
-  // other tmva options
-  const bool  addSpectators(false);
-  const bool  doECalCut(false);
-  const float treeWeight(1.0);
-  const TCut  trainCut("(eSumBHCal>=0)&&(eSumBEMC>=0)&&(abs(hLeadBHCal)<1.1)&&(abs(hLeadBEMC)<1.1)");
+  // grab calculation parameters
+  TMVAHelper::Parameters param = TMVAClusterParameters::GetParameters();
 
   // lower verbosity & announce start
   gErrorIgnoreLevel = kError;
-  std::cout << "\n  Beginning calibration training and evaluation macro..." << std::endl;
+  std::cout << "\n  Beginning calibration training macro..." << std::endl;
 
   // --------------------------------------------------------------------------
   // Open input/outputs
@@ -195,9 +107,9 @@ void TrainBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   // --------------------------------------------------------------------------
 
   // create tmva helper
-  TMVAHelper::Trainer train_helper(vecUseAndVar, vecMethods);
-  train_helper.SetFactoryOptions(vecFactoryOpts);
-  train_helper.SetTrainOptions(vecTrainOpts);
+  TMVAHelper::Trainer train_helper( param.variables, param.methods );
+  train_helper.SetFactoryOptions(param.opts_factory);
+  train_helper.SetTrainOptions(param.opts_training);
   std::cout << "    Created TMVA helper." << std::endl;
 
 
@@ -215,12 +127,12 @@ void TrainBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   std::cout << "      Created factory and data loader..." << std::endl;
 
   // now load variables
-  train_helper.LoadVariables(loader, addSpectators);
+  train_helper.LoadVariables(loader, param.add_spectators);
   std::cout << "      Loaded variables..." << std::endl;
 
   // add tree & prepare for training
-  loader -> AddRegressionTree(ntInput, treeWeight);
-  loader -> PrepareTrainingAndTestTree(trainCut, train_helper.CompressTrainingOptions().data());
+  loader -> AddRegressionTree(ntInput, param.tree_weight);
+  loader -> PrepareTrainingAndTestTree(param.training_cuts, train_helper.CompressTrainingOptions().data());
   std::cout << "      Added tree, prepared training..." << std::endl;
 
   // book methods
@@ -250,7 +162,7 @@ void TrainBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   delete loader;
 
   // announce end & exit
-  std::cout << "  Finished BHCal training script!\n" << std::endl;
+  std::cout << "  Finished BHCal calibration training macro!\n" << std::endl;
   return;
 
 }
