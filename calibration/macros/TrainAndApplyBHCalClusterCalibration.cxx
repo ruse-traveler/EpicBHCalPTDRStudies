@@ -192,6 +192,7 @@ void TrainAndApplyBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   const uint64_t nEntries = ntToApply -> GetEntries();
   cout << "    Processing: " << nEntries << " events" << endl;
 
+  // loop over entries in input tuple
   uint64_t nBytes = 0;
   for (uint64_t iEntry = 0; iEntry < nEntries; iEntry++) {
 
@@ -253,7 +254,7 @@ void TrainAndApplyBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   delete reader;
 
   // announce end & exit
-  std::cout << "  Finished BHCal calibration script!\n" << std::endl;
+  std::cout << "  Finished BHCal calibration macro!\n" << std::endl;
   return;
 
 }
