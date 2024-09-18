@@ -12,7 +12,6 @@ Detailed usage of specific pieces of code are detailed below.
 
 
 ## macros/FillBHCalClusterCalibrationTuple.cxx
-----------------------------------------------
 
 A ROOT+PODIO macro to process EICrecon output (from the simulation campaign or otherwise).
 This fills a TNtuple which holds information on the clusters from the BHCal and BIC used to
@@ -20,11 +19,13 @@ train an ML model for calibrating the combined BHCal+BIC response when reconstru
 particle energies.
 
 ### Input
+---------
 
 Ingests output from EICrecon, either `*.edm4eic.tree.root` or `*.podio.root`. However, it's
 curently designed to work only **on single particle events.**
 
 ### Usage
+---------
 
 Can be run just like a typical ROOT macro:
 
@@ -69,17 +70,18 @@ root -b -q "FillBHCalClusterCalibrationTuple.cxx({\
 
 
 ## plugins/FillBHCalClusterCalibrationTupleProcessor.{cc,h}
------------------------------------------------------------
 
 This EICrecon plugin fills the same function as `FillBHCalClusterCalibrationTuple.cxx`.
 It's included here primarily for reference.
 
 ### Input
+---------
 
-Since this is an EICrecon plugin, it runs on `.edm4hep.root` files.  However, it's  currently
+Since this is an EICrecon plugin, it runs on `*.edm4hep.root` files.  However, it's  currently
 designed to **only work on single particle events.**
 
 ###  Usage
+----------
 
 After compiling `EICrecon`, autogenerate relevant cmake files with:
 
@@ -107,3 +109,27 @@ Finally, plugin can be run with EICrecon like so:
 ```
 eicrecon -Pplugins=FillBHCalCalibrationTuple <input edm4hep file>
 ```
+
+
+
+## plugins/GetRawEnergiesProcessor.{cc,h}
+
+This EICrecon plugin fills a set of histograms of information from a set of "simulated hits"
+(sum of all G4hits for a given sensitive volume), "raw hits" (digitized simulated hits), and
+"reconstructed hits" (calorimeter cells reconstructed from the raw hits).
+
+### Input
+---------
+
+Being an EICrecon plugin, it runs on `*.edm4hep.root`, regardless of what type of event.
+
+## Usage
+--------
+
+Identical to `FillBHCalClusterCalibrationTupleProcessor`. Only change is that you should do
+
+```
+eicmkplugin.py GetRawEnergies
+```
+
+when generating the cmake files.
