@@ -35,11 +35,21 @@
 namespace CalibratedClusterHistograms {
 
   // --------------------------------------------------------------------------
+  //! 1D Quantities to be histogrammed & binning
+  // --------------------------------------------------------------------------
+  std::vector<std::pair<std::string, HistHelper::Definition>> vecHist1D = {
+    { "ePar", {"hEnePar", {"E_{par} [GeV]", "counts"}, {/* TODO binning goes here */} } },
+    { "ePar_LD", {"hEneLD", {"E_{calib} [GeV]", "counts"}, {/* TODO binning goes here */} }
+  }; 
+
+
+  // --------------------------------------------------------------------------
   //! Fill calibrated cluster histograms
   // --------------------------------------------------------------------------
   void Fill(
     const std::string& in_file,
     const std::string& in_tuple,
+    const std::vector<std::pair<float, float>> par_bins,
     TFile* out_file
   ) {
 
@@ -76,9 +86,31 @@ namespace CalibratedClusterHistograms {
               << "      input tuple = " << in_tuple
               << std::endl;
 
+    /* TODO generate histograms for each energy bin here */
+
+    // ------------------------------------------------------------------------
+    // Process input tuple
+    // ------------------------------------------------------------------------
+
+    // lambda to check if particle energy is in bin
+    std::size_t iBin;
+    auto isInEneBin = [&iBin, bins](const float energy) {
+      return ((energy >= bins.at(iBin).first) && (energy < bins.at(iBin).second));
+    }
+
+    /* TODO Dataframe processing goes here
+     * Will look like:
+     *   for (iBin = 0; iBin < bins.size(); ++iBin) {
+     *     for (variable : variables) {
+     *       vecRResultPtr<TH1D> = frame.Filter(isInEneBin, {"ePar"})
+     *                                  .Hist1D(TH1DModel);
+     *     }
+     *   }
+     */
+
     // ------------------------------------------------------------------------
     // Save and exit
-    // -----------------------------------------------------------------------
+    // ------------------------------------------------------------------------
 
     // save histograms
     out_file -> cd();
