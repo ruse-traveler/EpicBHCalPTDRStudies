@@ -17,6 +17,7 @@
 #include <vector>
 #include <utility>
 #include <iostream>
+#include <functional>
 // root libraries
 #include <TH1.h>
 #include <TH2.h>
@@ -25,7 +26,8 @@
 #include <ROOT/RDataFrame.hxx>
 #include <ROOT/RDF/HistoModels.hxx>
 // analysis utilities
-#include "../../utility/HistHelper.hxx"
+#include "HistHelper.hxx"
+#include "NTupleHelper.hxx"
 
 
 
@@ -34,13 +36,20 @@
 // ============================================================================
 namespace CalibratedClusterHistograms {
 
+  // create an instance of the bin database
+  HistHelper::Bins bins;
+
   // --------------------------------------------------------------------------
   //! 1D Quantities to be histogrammed & binning
   // --------------------------------------------------------------------------
-  std::vector<std::pair<std::string, HistHelper::Definition>> vecHist1D = {
-    { "ePar", {"hEnePar", {"E_{par} [GeV]", "counts"}, {/* TODO binning goes here */} } },
-    { "ePar_LD", {"hEneLD", {"E_{calib} [GeV]", "counts"}, {/* TODO binning goes here */} }
+  std::vector<std::pair<std::string, HistHelper::Definition>> vecHistDef1D = {
+    { "ePar",        {"hEnePar", "", {"E_{par} [GeV]", "a.u."}, {bins.Get("energy")}}     },
+    { "ePar_LD",     {"hEneLD", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}    },
+    { "ePar_KNN",    {"hEneKNN", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
+    { "ePar_MLP",    {"hEneMLP", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
+    { "ePar_FDA_GA", {"hEneFDAGA", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}} }
   }; 
+
 
 
   // --------------------------------------------------------------------------
@@ -49,8 +58,9 @@ namespace CalibratedClusterHistograms {
   void Fill(
     const std::string& in_file,
     const std::string& in_tuple,
-    const std::vector<std::pair<float, float>> par_bins,
-    TFile* out_file
+    const std::vector<std::tuple<std::string, float, float>> par_bins,
+    TFile* out_file,
+    const bool do_progress = false
   ) {
 
     // turn on histogram errors & announce start
@@ -70,14 +80,22 @@ namespace CalibratedClusterHistograms {
       assert(out_file);
     }
 
-    // open dataframe
-    ROOT::RDataFrame frame(in_tuple.data(), in_file.data());
+    // open input file
+    TFile* input  = new TFile(in_file.data(),  "read");
+    if (!input) {
+      std::cerr << "PANIC: couldn't open input file!\n"
+                << "       input  = " << input
+                << std::endl;
+      assert(input);
+    }
 
-    // make sure file isn't empty
-    auto frames = frame.Count();
-    if (frames == 0) {
-      std::cerr << "PANIC: no frames found!" << std::endl;
-      assert(frames > 0);
+    // grab input tuple
+    TNtuple* ntInput = (TNtuple*) input -> Get(in_tuple.data());
+    if (!input) {
+      std::cerr << "PANIC: couldn't grab input tuple!\n"
+                << "       name  = " << in_tuple
+                << std::endl;
+      assert(ntInput);
     }
 
     // print input
@@ -86,27 +104,72 @@ namespace CalibratedClusterHistograms {
               << "      input tuple = " << in_tuple
               << std::endl;
 
-    /* TODO generate histograms for each energy bin here */
+    // create helper to process input tuple
+    NTupleHelper helper( ntInput );
+    helper.SetBranches( ntInput );
+
+    // ------------------------------------------------------------------------
+    // Generate histograms
+    // -----------------------------------------------------------------------
+
+    std::vector<std::vector<TH1D*>> vecHist1D( par_bins.size() );
+    for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
+
+      // create 1d hist
+      for (auto def : vecHistDef1D) {
+        def.second.AppendToName("_" + get<0>(par_bins[iBin]));
+        vecHist1D[iBin].push_back( def.second.MakeTH1() );
+      }
+    }  // end particle bin loop
 
     // ------------------------------------------------------------------------
     // Process input tuple
     // ------------------------------------------------------------------------
 
-    // lambda to check if particle energy is in bin
-    std::size_t iBin;
-    auto isInEneBin = [&iBin, bins](const float energy) {
-      return ((energy >= bins.at(iBin).first) && (energy < bins.at(iBin).second));
-    }
+    // lambda to check if a particle energy is in bin
+    auto isInParBin = [](const float energy, const std::pair<float, float>& bin) {
+      return ((energy >= bin.first) && (energy < bin.second));
+    };
 
-    /* TODO Dataframe processing goes here
-     * Will look like:
-     *   for (iBin = 0; iBin < bins.size(); ++iBin) {
-     *     for (variable : variables) {
-     *       vecRResultPtr<TH1D> = frame.Filter(isInEneBin, {"ePar"})
-     *                                  .Hist1D(TH1DModel);
-     *     }
-     *   }
-     */
+    // get number of entries
+    const uint64_t nEntries = ntInput -> GetEntries();
+    cout << "    Processing: " << nEntries << " events" << endl;
+
+    // loop over entries in input tuple
+    uint64_t nBytes = 0;
+    for (uint64_t iEntry = 0; iEntry < nEntries; iEntry++) {
+
+      // announce progress
+      if (do_progress) {
+        std::cout << "      Processing entry " << iEntry + 1 << "/" << nEntries << "...";
+        if (iEntry + 1 < nEntries) {
+          std::cout << "\r" << std::flush;
+        } else {
+          std::cout << std::endl;
+        }
+      }
+
+      // grab entry
+      const uint64_t bytes = ntInput -> GetEntry(iEntry);
+      if (bytes < 0.) {
+        std::cerr << "WARNING error in entry #" << iEntry << "! Aborting loop!" << std::endl;
+        break;
+      } else {
+        nBytes += bytes;
+      }
+
+      // fill histograms for each bin of particle energy
+      for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
+        if ( isInParBin(helper.GetVariable("ePar"), bin) ) {
+
+          // fill 1d histograms
+          for (std::size_t iVar = 0; iVar < vecHistDef1D.size(); ++iVar) {
+            vecHist1D[iBin][iVar] -> Fill( helper.GetVariable(vecHistDef1D[iVar].first) );
+          }
+        }
+      }  // end bin loop
+    }  // end entry loop
+    std::cout << "    Finished processing tuple." << std::endl;
 
     // ------------------------------------------------------------------------
     // Save and exit
@@ -114,7 +177,11 @@ namespace CalibratedClusterHistograms {
 
     // save histograms
     out_file -> cd();
-    /* TODO saving goes here */
+    for (auto& row1D : vecHist1D) {
+      for (auto& hist1D : row1D) {
+        hist1D -> Write();
+      }
+    }
 
     // announce end
     std::cout << "  Finished filling calibrated cluster histograms!\n"
@@ -124,7 +191,7 @@ namespace CalibratedClusterHistograms {
     // exit
     return;
 
-  }  // end 'Fill(std::string&, std::string&, std::string&)'
+  }  // end 'Fill(std::string&, std::string&, TFile*, std::vector<std::tuple<std::string, float, float>>, bool)'
 
 }  // end CalibratedClusterHistograms
 

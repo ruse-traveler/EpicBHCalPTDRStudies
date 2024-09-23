@@ -49,7 +49,13 @@ struct Options {
 // ============================================================================
 void FillBHCalClusterHistograms(const Options& opt = DefaultOptions) {
 
-  /* TODO set binning, color scheme, etc. here */
+  // binning & histogram tag of particle energies
+  const std::vector<std::tuple<std::string, float, float>> vecParBins = {
+    std::make_tuple("Ene2",  0., 4.),
+    std::make_tuple("Ene5",  4., 6.),
+    std::make_tuple("Ene7",  6., 9.),
+    std::make_tuple("Ene10", 9., 11.)
+  };
 
   // lower verbosity & announce start
   gErrorIgnoreLevel = kError;
@@ -67,7 +73,7 @@ void FillBHCalClusterHistograms(const Options& opt = DefaultOptions) {
   /* TODO call will go here */
 
   // fill calibrated histograms
-  CalibratedClusterHistograms::Fill(opt.in_calib_file, opt.in_calib_tuple, output);
+  CalibratedClusterHistograms::Fill(opt.in_calib_file, opt.in_calib_tuple, vecParBins, output);
   std::cout << "    Filled calibrated histograms." << std::endl;
 
   // close output file
