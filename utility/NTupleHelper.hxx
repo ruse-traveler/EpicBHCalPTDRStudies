@@ -147,6 +147,26 @@ class NTupleHelper {
 
     }  // end ctor(std::vector<std::string>&)'
 
+    // ------------------------------------------------------------------------
+    //! ctor accepting a TNTuple
+    // -----------------------------------------------------------------------
+    NTupleHelper(TNtuple* tuple) {
+
+      // collect variables from branches
+      for (auto branch : *(tuple -> GetListOfBranches())) {
+        m_variables.push_back( branch -> GetName() );
+      }
+
+      // create map between name and position in vector
+      std::size_t iVar = 0;
+      for (const std::string& var : m_variables) {
+        m_index[var] = iVar;
+        ++iVar;
+      }
+      m_values.resize(m_variables.size());
+
+    }  // end ctor(TNtuple*)
+
     // make TMVAHelper::Reader a friend
     friend class TMVAHelper::Reader;
 
