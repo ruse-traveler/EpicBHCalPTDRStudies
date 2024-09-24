@@ -3,7 +3,8 @@
  *  \author Derek Anderson
  *  \date   09.21.2024
  *
- *  A lightweight namespace to help work with histograms.
+ *  A lightweight namespace to help work with histograms
+ *  (and graphs).
  */
 /// ===========================================================================
 
