@@ -13,15 +13,18 @@
 #define CalibratedClusterHistograms_hxx
 
 // c++ utilities
+#include <regex>
 #include <string>
 #include <vector>
 #include <utility>
 #include <iostream>
 #include <functional>
 // root libraries
+#include <TF1.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
+#include <TGraphErrors.h>
 // dataframe related classes
 #include <ROOT/RDataFrame.hxx>
 #include <ROOT/RDF/HistoModels.hxx>
@@ -40,15 +43,37 @@ namespace CalibratedClusterHistograms {
   HistHelper::Bins bins;
 
   // --------------------------------------------------------------------------
-  //! 1D Quantities to be histogrammed & binning
+  //! 1D Quantities to be histogrammed & their histogram definition
   // --------------------------------------------------------------------------
+  /*! List of pairs that define which variables to be placed in 1d histograms
+   *  and the corresponding histograms. 
+   *    first  = variable to be histogrammed
+   *    second = histogram definition
+   */ 
   std::vector<std::pair<std::string, HistHelper::Definition>> vecHistDef1D = {
-    { "ePar",        {"hEnePar", "", {"E_{par} [GeV]", "a.u."}, {bins.Get("energy")}}     },
-    { "ePar_LD",     {"hEneLD", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}    },
-    { "ePar_KNN",    {"hEneKNN", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
-    { "ePar_MLP",    {"hEneMLP", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
-    { "ePar_FDA_GA", {"hEneFDAGA", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}} }
+    {"ePar",        {"hEnePar", "", {"E_{par} [GeV]", "a.u."}, {bins.Get("energy")}}     },
+    {"ePar_LD",     {"hEneLD", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}    },
+    {"ePar_KNN",    {"hEneKNN", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
+    {"ePar_MLP",    {"hEneMLP", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
+    {"ePar_FDA_GA", {"hEneFDAGA", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}} }
   }; 
+
+  // --------------------------------------------------------------------------
+  //! Whether or not 1D histogram is used to calculate resolution
+  // --------------------------------------------------------------------------
+  /*! List of bool's that indicate whether or not a 1D histogram
+   *  should be used to calculate a resolution. Should be 1-to-1
+   *  with vecHistDef1D.
+   *
+   *  FIXME there might be an easier way to do this...
+   */
+  std::vector<bool> vecDoReso = {
+    false,
+    true,
+    true,
+    true,
+    true
+  };
 
 
 
@@ -56,10 +81,10 @@ namespace CalibratedClusterHistograms {
   //! Fill calibrated cluster histograms
   // --------------------------------------------------------------------------
   void Fill(
+    TFile* out_file,
     const std::string& in_file,
     const std::string& in_tuple,
-    const std::vector<std::tuple<std::string, float, float>> par_bins,
-    TFile* out_file,
+    const std::vector<std::tuple<std::string, float, float, float>> par_bins,
     const bool do_progress = false
   ) {
 
@@ -118,7 +143,7 @@ namespace CalibratedClusterHistograms {
       // create 1d hist
       for (auto def : vecHistDef1D) {
         def.second.AppendToName("_" + get<0>(par_bins[iBin]));
-        vecHist1D[iBin].push_back( def.second.MakeTH1() );
+        vecHist1D[iBin].push_back(  def.second.MakeTH1() );
       }
     }  // end particle bin loop
 
@@ -160,6 +185,9 @@ namespace CalibratedClusterHistograms {
 
       // fill histograms for each bin of particle energy
       for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
+
+        // check if particle energy is in bin
+        std::pair<float, float> bin = {get<2>(par_bins[iBin]), get<3>(par_bins[iBin])};
         if ( isInParBin(helper.GetVariable("ePar"), bin) ) {
 
           // fill 1d histograms
@@ -172,6 +200,18 @@ namespace CalibratedClusterHistograms {
     std::cout << "    Finished processing tuple." << std::endl;
 
     // ------------------------------------------------------------------------
+    // Fit energies and generate graphs
+    // ------------------------------------------------------------------------
+
+    /* TODO fill in
+     *   1. loop over histograms
+     *   2. if flagged as being used for reco, fit w/ gaussian based on
+     *      provided info
+     *   3. grab mu, sigma and errors from fit/hists and load into vectors
+     *   4. turn vectors into TGraphs
+     */
+
+    // ------------------------------------------------------------------------
     // Save and exit
     // ------------------------------------------------------------------------
 
@@ -182,6 +222,8 @@ namespace CalibratedClusterHistograms {
         hist1D -> Write();
       }
     }
+    /* TODO save TF1s here */
+    /* TODO save graphs here */
 
     // announce end
     std::cout << "  Finished filling calibrated cluster histograms!\n"
@@ -191,7 +233,7 @@ namespace CalibratedClusterHistograms {
     // exit
     return;
 
-  }  // end 'Fill(std::string&, std::string&, TFile*, std::vector<std::tuple<std::string, float, float>>, bool)'
+  }  // end 'Fill(TFile*, std::string&, std::string&, std::vector<std::tuple<*>>, bool)'
 
 }  // end CalibratedClusterHistograms
 
