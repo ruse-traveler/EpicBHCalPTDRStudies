@@ -3,8 +3,7 @@
  *  \author Derek Anderson
  *  \date   09.21.2024
  *
- *  A lightweight namespace to help work with histograms
- *  (and graphs).
+ *  A lightweight namespace to help work with histograms.
  */
 /// ===========================================================================
 
@@ -13,12 +12,9 @@
 
 // c++ utilities
 #include <map>
-#include <limits>
 #include <string>
 #include <vector>
 #include <cassert>
-#include <utility>
-#include <optional>
 #include <algorithm>
 // root libraries
 #include <TH1.h>
@@ -33,9 +29,42 @@
 //! Hist Helper
 // ============================================================================
 /*! A small namespace to help work with
- *  ROOT histograms (and graphs).
+ *  ROOT histograms.
  */
 namespace HistHelper {
+
+  // ------------------------------------------------------------------------
+  //! Helper method to divide a range into a certain number of bins
+  // ------------------------------------------------------------------------
+  std::vector<double> GetBinEdges(
+    const std::size_t num,
+    const double start,
+    const double stop
+  ) {
+
+    // throw error if start/stop are out of order
+    // or if num is zero
+    if (num <= 0)     assert(num > 0);
+    if (start > stop) assert(start <= stop);
+
+    // set start/stop, calculate bin steps
+    const double step = (stop - start) / num;
+ 
+    // instantiate vector to hold bins
+    std::vector<double> bins;
+
+    // and fill vector
+    double edge = start;
+    for (std::size_t inum = 0; inum < num; ++inum) {
+      bins.push_back( edge );
+      edge += step;
+    }
+    bins.push_back( edge );
+    return bins;
+
+  }  // end 'GetBinEdges(uint32_t, double, double)'
+
+
 
   // ==========================================================================
   //! Binning definition
@@ -47,13 +76,11 @@ namespace HistHelper {
 
     private:
 
-      // members for uniform binning
-      uint32_t m_num;
-      double   m_start;
-      double   m_stop;
-
-      // member for variable binning
-      std::optional<std::vector<double>> m_bins = std::nullopt;
+      // data members
+      double              m_start;
+      double              m_stop;
+      uint32_t            m_num;
+      std::vector<double> m_bins;
 
     public:
 
@@ -67,7 +94,7 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       //! Variable bin getter
       // ----------------------------------------------------------------------
-      std::optional<std::vector<double>> GetBins() const {return m_bins;}
+      std::vector<double> GetBins() const {return m_bins;}
 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
@@ -83,6 +110,7 @@ namespace HistHelper {
         m_num   = num;
         m_start = start;
         m_stop  = stop;
+        m_bins  = GetBinEdges(m_num, m_start, m_stop);
 
       }  // end ctor(uint32_t, double, double)
 
@@ -239,54 +267,102 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       TH1D* MakeTH1() const {
 
-        TH1D* hist;
-        if (m_bins_x.GetBins().has_value()) {
-          hist = new TH1D(
-            m_name.data(),
-            m_title.data(),
-            m_bins_x.GetNum(),
-            m_bins_x.GetBins().value().data()
-          );
-        } else {
-          hist = new TH1D(
-            m_name.data(),
-            m_title.data(),
-            m_bins_x.GetNum(),
-            m_bins_x.GetStart(),
-            m_bins_x.GetStop()
-          );
-        }
+        TH1D* hist = new TH1D(
+          m_name.data(),
+          m_title.data(),
+          m_bins_x.GetNum(),
+          m_bins_x.GetBins().data()
+        );
         return hist;
 
       }  // end 'MakeTH1()'
+
+      // ----------------------------------------------------------------------
+      //! Generate TH2D
+      // ----------------------------------------------------------------------
+      TH2D* MakeTH2() const {
+
+        TH2D* hist = new TH2D(
+          m_name.data(),
+          m_title.data(),
+          m_bins_x.GetNum(),
+          m_bins_x.GetBins().data(),
+          m_bins_y.GetNum(),
+          m_bins_y.GetBins().data()
+        );
+        return hist;
+
+      }  // end 'MakeTH2()'
+
+      // ----------------------------------------------------------------------
+      //! Generate TH3D
+      // ----------------------------------------------------------------------
+      TH3D* MakeTH3() const {
+
+        TH3D* hist = new TH3D(
+          m_name.data(),
+          m_title.data(),
+          m_bins_x.GetNum(),
+          m_bins_x.GetBins().data(),
+          m_bins_y.GetNum(),
+          m_bins_y.GetBins().data(),
+          m_bins_z.GetNum(),
+          m_bins_z.GetBins().data()
+        );
+        return hist;
+
+      }  // end 'MakeTH3()'
 
       // ----------------------------------------------------------------------
       //! Generate TH1DModel
       // ----------------------------------------------------------------------
       ROOT::RDF::TH1DModel MakeTH1Model() const {
 
-        ROOT::RDF::TH1DModel hist;
-        if (m_bins_x.GetBins().has_value()) {
-          hist = ROOT::RDF::TH1DModel(
-            m_name.data(),
-            m_title.data(),
-            m_bins_x.GetNum(),
-            m_bins_x.GetBins().value().data()
-          );
-        } else {
-          hist = ROOT::RDF::TH1DModel(
-            m_name.data(),
-            m_title.data(),
-            m_bins_x.GetNum(),
-            m_bins_x.GetStart(),
-            m_bins_x.GetStop()
-          );
-        }
+        ROOT::RDF::TH1DModel hist = ROOT::RDF::TH1DModel(
+          m_name.data(),
+          m_title.data(),
+          m_bins_x.GetNum(),
+          m_bins_x.GetBins().data()
+        );
         return hist;
 
       }  // end 'MakeTH1Model()'
 
-      /* TODO add similar for TH2, TH3 */
+      // ----------------------------------------------------------------------
+      //! Generate TH2DModel
+      // ----------------------------------------------------------------------
+      ROOT::RDF::TH2DModel MakeTH2Model() const {
+
+        ROOT::RDF::TH2DModel hist = ROOT::RDF::TH2DModel(
+          m_name.data(),
+          m_title.data(),
+          m_bins_x.GetNum(),
+          m_bins_x.GetBins().data(),
+          m_bins_y.GetNum(),
+          m_bins_y.GetBins().data()
+        );
+        return hist;
+
+      }  // end 'MakeTH2Model()'
+
+      // ----------------------------------------------------------------------
+      //! Generate TH3DModel
+      // ----------------------------------------------------------------------
+      ROOT::RDF::TH3DModel MakeTH3Model() const {
+
+        ROOT::RDF::TH3DModel hist = ROOT::RDF::TH3DModel(
+          m_name.data(),
+          m_title.data(),
+          m_bins_x.GetNum(),
+          m_bins_x.GetBins().data(),
+          m_bins_y.GetNum(),
+          m_bins_y.GetBins().data(),
+          m_bins_z.GetNum(),
+          m_bins_z.GetBins().data()
+        );
+        return hist;
+
+      }  // end 'MakeTH3Model()'
 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
@@ -309,7 +385,7 @@ namespace HistHelper {
         SetAxisTitles(axis_titles);
         SetAxisBins(axis_bins);
 
-      }  // end 'ctor(std::string&, std::string&, std::vector<std::string>&, std::vector<Binning>&)'
+      }  // end ctor(std::string&, std::string&, std::vector<std::string>&, std::vector<Binning>&)
 
   };  // end Definition
 
