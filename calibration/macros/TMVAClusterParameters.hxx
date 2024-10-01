@@ -102,8 +102,8 @@ namespace TMVAClusterParameters {
   //! Cuts to apply when training
   // -------------------------------------------------------------------------
   const TCut trainCut(
-    "(eSumBHCal>=0)&&"
-    "(eSumBEMC>=0)&&"
+    "((eSumBHCal>=0)||"
+    "(eSumBEMC>=0))&&"
     "(abs(hLeadBHCal)<1.1)&&"
     "(abs(hLeadBEMC)<1.1)"
   );
