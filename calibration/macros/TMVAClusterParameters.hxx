@@ -139,7 +139,7 @@ namespace TMVAClusterParameters {
   //! Reading options
   // --------------------------------------------------------------------------
   std::vector<std::string> vecReadOpts = {
-    "!Color",
+    "!Color"
   };
 
   // --------------------------------------------------------------------------
