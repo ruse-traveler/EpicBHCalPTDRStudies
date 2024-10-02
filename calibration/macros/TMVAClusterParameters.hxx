@@ -31,7 +31,7 @@
 namespace TMVAClusterParameters {
 
   // --------------------------------------------------------------------------
-  // Input variables & their usage
+  //! Input variables & their usage
   // --------------------------------------------------------------------------
   const std::vector<std::pair<TMVAHelper::Use, std::string>> vecUseAndVar = {
     {TMVAHelper::Use::Target, "ePar"},
@@ -117,7 +117,7 @@ namespace TMVAClusterParameters {
   );
 
   // --------------------------------------------------------------------------
-  // General TMVA options
+  //! General TMVA options
   // --------------------------------------------------------------------------
   std::vector<std::string> vecFactoryOpts = {
     "!V",
@@ -143,7 +143,7 @@ namespace TMVAClusterParameters {
   };
 
   // --------------------------------------------------------------------------
-  // Misc other options
+  //! Misc other options
   // -------------------------------------------------------------------------
   const bool  addSpectators(false);
   const float treeWeight(1.0);
@@ -151,7 +151,7 @@ namespace TMVAClusterParameters {
 
 
   // --------------------------------------------------------------------------
-  // Set method-specific options
+  //! Set method-specific options
   // --------------------------------------------------------------------------
   /*! This method is used to define what options to use
    *  with each method. Which methods are actually used
