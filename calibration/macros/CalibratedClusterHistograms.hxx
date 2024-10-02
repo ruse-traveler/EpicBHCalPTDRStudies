@@ -27,13 +27,10 @@
 #include <TH2.h>
 #include <TFile.h>
 #include <TGraphErrors.h>
-// dataframe related classes
-#include <ROOT/RDataFrame.hxx>
-#include <ROOT/RDF/HistoModels.hxx>
 // analysis utilities
-#include "HistHelper.hxx"
-#include "GraphHelper.hxx"
-#include "NTupleHelper.hxx"
+#include "../../utility/HistHelper.hxx"
+#include "../../utility/GraphHelper.hxx"
+#include "../../utility/NTupleHelper.hxx"
 
 
 
@@ -89,7 +86,7 @@ namespace CalibratedClusterHistograms {
   // --------------------------------------------------------------------------
   //! Options for fits
   // --------------------------------------------------------------------------
-  const float       nSigFit = 1.5;
+  const float       nSigFit = 2.0;
   const std::string fitFunc = "gaus(0)";
   const std::string fitOpt  = "rQ";
 
@@ -264,16 +261,16 @@ namespace CalibratedClusterHistograms {
 
       // define graphs
       vecResHist.push_back(
-        GraphHelper::Definition(grResName.first + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grResName.first + "_" + vecHistDef1D[iVar].first)
       );
       vecResFit.push_back(
-        GraphHelper::Definition(grResName.second + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grResName.second + "_" + vecHistDef1D[iVar].first)
       );
       vecLinHist.push_back(
-        GraphHelper::Definition(grLinName.first + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grLinName.first + "_" + vecHistDef1D[iVar].first)
       );
       vecLinFit.push_back(
-        GraphHelper::Definition(grLinName.second + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grLinName.second + "_" + vecHistDef1D[iVar].first)
       );
   
       // loop over particle bins
@@ -310,27 +307,43 @@ namespace CalibratedClusterHistograms {
         vecHist1D[iBin][iVar].first -> Fit(fitName.data(), fitOpt.data());
         vecFit1D[iVar].push_back(fit);
 
+        // grab fit mean, width
+        const double muValFit  = fit -> GetParameter(1);
+        const double muErrFit  = fit -> GetParError(1);
+        const double sigValFit = fit -> GetParameter(2);
+        const double sigErrFit = fit -> GetParError(2);
+        const double resValFit = sigValFit / muValFit;
+        const double resErrFit = std::hypot((muErrFit/muValFit), (sigErrFit/sigValFit));
+
+        // add points to hist graphs
+        vecResFit.back().AddPoint( {get<1>(par_bins[iBin]), resValFit, 0., resErrFit} );
+        vecLinFit.back().AddPoint( {get<1>(par_bins[iBin]), muValFit,  0., muErrFit}  );
+
       }  // end bin loop
     }  // end hist loop
-
-    /* TODO fill in
-     *   3. grab mu, sigma and errors from fit and load into vectors
-     *   4. turn vectors into TGraphs
-     */
 
     // ------------------------------------------------------------------------
     // Save and exit
     // ------------------------------------------------------------------------
 
-    // save histograms
+    // save histograms, fits, and graphs
     out_file -> cd();
     for (auto& row1D : vecHist1D) {
       for (auto& hist1D : row1D) {
         hist1D.first -> Write();
       }
     }
-    /* TODO save TF1s here */
-    /* TODO save graphs here */
+    for (auto& row1D : vecFit1D) {
+      for (auto& fit1D : row1D) {
+        fit1D -> Write();
+      }
+    }
+    for (std::size_t iGraph = 0; iGraph < vecResHist.size(); ++iGraph) {
+      vecResHist[iGraph].MakeTGraphErrors() -> Write();
+      vecLinHist[iGraph].MakeTGraphErrors() -> Write();
+      vecResFit[iGraph].MakeTGraphErrors()  -> Write();
+      vecLinFit[iGraph].MakeTGraphErrors()  -> Write();
+    }
 
     // announce end
     std::cout << "  Finished filling calibrated cluster histograms!\n"
