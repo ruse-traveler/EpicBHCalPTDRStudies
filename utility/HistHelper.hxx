@@ -144,8 +144,9 @@ namespace HistHelper {
     private:
 
       std::map<std::string, Binning> m_bins = {
-        { "number", {202, -1.5, 200.5} },
-        { "energy", {202, -1., 100.}   }
+        { "number",   {202, -1.5, 200.5} },
+        { "fraction", {104, -0.1, 5.1}   },
+        { "energy",   {202, -1., 100.}   }
       };
 
     public:
@@ -229,6 +230,15 @@ namespace HistHelper {
       Binning     m_bins_z;
 
     public:
+
+      // ----------------------------------------------------------------------
+      //! Getters
+      // ----------------------------------------------------------------------
+      std::string GetName()   const {return m_name;}
+      std::string GetTitle()  const {return m_title;}
+      std::string GetTitleX() const {return m_title_x;}
+      std::string GetTitleY() const {return m_title_y;}
+      std::string GetTitleZ() const {return m_title_z;}
 
       // ----------------------------------------------------------------------
       //! Set and modify histogram title/name

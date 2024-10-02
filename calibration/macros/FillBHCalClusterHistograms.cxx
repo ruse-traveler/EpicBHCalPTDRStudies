@@ -20,6 +20,7 @@
 #include <iostream>
 // analysis utilities
 #include "CalibratedClusterHistograms.hxx"
+#include "UncalibratedClusterHistograms.hxx"
 
 
 
@@ -74,7 +75,8 @@ void FillBHCalClusterHistograms(const Options& opt = DefaultOptions) {
   std::cout << "    Opened output file: " << opt.out_file << std::endl;
 
   // fill uncalibrated histograms
-  /* TODO call will go here */
+  UncalibratedClusterHistograms::Fill(output, opt.in_uncalib_file, opt.in_uncalib_tuple, vecParBins, opt.do_progress);
+  std::cout << "    Filled uncalibrated histograms." << std::endl;
 
   // fill calibrated histograms
   CalibratedClusterHistograms::Fill(output, opt.in_calib_file, opt.in_calib_tuple, vecParBins, opt.do_progress);
