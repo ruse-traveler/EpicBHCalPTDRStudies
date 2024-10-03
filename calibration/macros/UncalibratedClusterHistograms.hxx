@@ -447,7 +447,6 @@ namespace UncalibratedClusterHistograms {
               << "------------------------------\n"
               << std::endl;
 
-
     // exit
     return;
 
