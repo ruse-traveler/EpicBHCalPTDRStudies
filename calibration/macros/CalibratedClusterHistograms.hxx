@@ -43,14 +43,14 @@ namespace CalibratedClusterHistograms {
   HistHelper::Bins bins;
 
   // --------------------------------------------------------------------------
-  //! 1D Quantities to be histogrammed & their histogram definition
+  //! 1D variables to be histogrammed & definition
   // --------------------------------------------------------------------------
   /*! List of pairs that define which variables to be placed in 1d histograms
    *  and the corresponding histograms. 
    *    first  = variable to be histogrammed
    *    second = histogram definition
    */ 
-  std::vector<std::pair<std::string, HistHelper::Definition>> vecHistDef1D = {
+  std::vector<std::pair<std::string, HistHelper::Definition>> vecVarDef1D = {
     {"ePar",        {"hEnePar", "", {"E_{par} [GeV]", "a.u."}, {bins.Get("energy")}}     },
     {"ePar_LD",     {"hEneLD", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}    },
     {"ePar_KNN",    {"hEneKNN", "", {"E_{calib} [GeV]", "a.u."}, {bins.Get("energy")}}   },
@@ -93,8 +93,8 @@ namespace CalibratedClusterHistograms {
   // --------------------------------------------------------------------------
   //! Option for graphs
   // --------------------------------------------------------------------------
-  const std::pair<std::string, std::string> grResName = {"grResHist", "grResFit"};
-  const std::pair<std::string, std::string> grLinName = {"grLinHist", "grLinFit"};
+  const std::pair<std::string, std::string> grResName = {"grCalibResHist", "grCalibResFit"};
+  const std::pair<std::string, std::string> grLinName = {"grCalibLinHist", "grCalibLinFit"};
 
 
 
@@ -145,7 +145,7 @@ namespace CalibratedClusterHistograms {
     }
 
     // print input
-    std::cout << "    Opened dataframe:\n"
+    std::cout << "    Opened inputs:\n"
               << "      input file  = " << in_file << "\n"
               << "      input tuple = " << in_tuple
               << std::endl;
@@ -158,18 +158,18 @@ namespace CalibratedClusterHistograms {
     // Generate histograms
     // -----------------------------------------------------------------------
 
-    std::vector<std::vector<std::pair<TH1D*, bool>>> vecHist1D( par_bins.size() );
+    std::vector<std::vector<std::pair<TH1D*, bool>>> vecVar1D( par_bins.size() );
     for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
 
       // create 1d hist
-      for (auto def : vecHistDef1D) {
+      for (auto def : vecVarDef1D) {
 
         // check if being used for reso calcualation
         const bool useForReso = (setOfVarForReso.count(def.first) > 0);
 
         // make histogram
         def.second.AppendToName("_" + get<0>(par_bins[iBin]));
-        vecHist1D[iBin].push_back(  {def.second.MakeTH1(), useForReso} );
+        vecVar1D[iBin].push_back(  {def.second.MakeTH1(), useForReso} );
 
       }
     }  // end particle bin loop
@@ -218,9 +218,9 @@ namespace CalibratedClusterHistograms {
         if ( isInParBin(helper.GetVariable("ePar"), bin) ) {
 
           // fill 1d histograms
-          for (std::size_t iVar = 0; iVar < vecHistDef1D.size(); ++iVar) {
-            vecHist1D[iBin][iVar].first -> Fill( 
-              helper.GetVariable(vecHistDef1D[iVar].first) 
+          for (std::size_t iVar = 0; iVar < vecVarDef1D.size(); ++iVar) {
+            vecVar1D[iBin][iVar].first -> Fill(
+              helper.GetVariable(vecVarDef1D[iVar].first)
             );
           }  // end variable loop
         }
@@ -233,7 +233,7 @@ namespace CalibratedClusterHistograms {
     // ------------------------------------------------------------------------
 
     if (doNorm) {
-      for (auto& row1D : vecHist1D) {
+      for (auto& row1D : vecVar1D) {
         for (auto& hist1D : row1D) {
           norm1D(histNorm, hist1D.first);
         }
@@ -252,36 +252,36 @@ namespace CalibratedClusterHistograms {
     std::vector<GraphHelper::Definition> vecLinFit;
 
     // loop over histograms
-    std::vector<std::vector<TF1*>> vecFit1D( vecHist1D.front().size() );
-    for (std::size_t iVar = 0; iVar < vecHist1D.front().size(); ++iVar) {
+    std::vector<std::vector<TF1*>> vecFit1D( vecVar1D.front().size() );
+    for (std::size_t iVar = 0; iVar < vecVar1D.front().size(); ++iVar) {
 
       // if not being used for reso calculation, skip
-      const bool useForReso = vecHist1D[0][iVar].second;
+      const bool useForReso = vecVar1D[0][iVar].second;
       if (!useForReso) continue; 
 
       // define graphs
       vecResHist.push_back(
-        GraphHelper::Definition(grResName.first + "_" + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grResName.first + "_" + vecVarDef1D[iVar].first)
       );
       vecResFit.push_back(
-        GraphHelper::Definition(grResName.second + "_" + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grResName.second + "_" + vecVarDef1D[iVar].first)
       );
       vecLinHist.push_back(
-        GraphHelper::Definition(grLinName.first + "_" + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grLinName.first + "_" + vecVarDef1D[iVar].first)
       );
       vecLinFit.push_back(
-        GraphHelper::Definition(grLinName.second + "_" + vecHistDef1D[iVar].first)
+        GraphHelper::Definition(grLinName.second + "_" + vecVarDef1D[iVar].first)
       );
   
       // loop over particle bins
       for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
 
         // grab hist integral, mean, width
-        const double intHist    = vecHist1D[iBin][iVar].first -> Integral();
-        const double muValHist  = vecHist1D[iBin][iVar].first -> GetMean();
-        const double muErrHist  = vecHist1D[iBin][iVar].first -> GetMeanError();
-        const double rmsValHist = vecHist1D[iBin][iVar].first -> GetRMS();
-        const double rmsErrHist = vecHist1D[iBin][iVar].first -> GetRMSError();
+        const double intHist    = vecVar1D[iBin][iVar].first -> Integral();
+        const double muValHist  = vecVar1D[iBin][iVar].first -> GetMean();
+        const double muErrHist  = vecVar1D[iBin][iVar].first -> GetMeanError();
+        const double rmsValHist = vecVar1D[iBin][iVar].first -> GetRMS();
+        const double rmsErrHist = vecVar1D[iBin][iVar].first -> GetRMSError();
         const double resValHist = rmsValHist / muValHist;
         const double resErrHist = std::hypot((muErrHist/muValHist), (rmsErrHist/rmsValHist));
 
@@ -290,7 +290,7 @@ namespace CalibratedClusterHistograms {
         vecLinHist.back().AddPoint( {get<1>(par_bins[iBin]), muValHist,  0., muErrHist}  );
 
         // create fit name
-        std::string fitName( vecHist1D[iBin][iVar].first -> GetName() );
+        std::string fitName( vecVar1D[iBin][iVar].first -> GetName() );
         fitName[0] = 'f';
 
         // calculate fit ranges
@@ -304,7 +304,7 @@ namespace CalibratedClusterHistograms {
         fit -> SetParameter(2, rmsValHist);
 
         // fit histogram
-        vecHist1D[iBin][iVar].first -> Fit(fitName.data(), fitOpt.data());
+        vecVar1D[iBin][iVar].first -> Fit(fitName.data(), fitOpt.data());
         vecFit1D[iVar].push_back(fit);
 
         // grab fit mean, width
@@ -328,7 +328,7 @@ namespace CalibratedClusterHistograms {
 
     // save histograms, fits, and graphs
     out_file -> cd();
-    for (auto& row1D : vecHist1D) {
+    for (auto& row1D : vecVar1D) {
       for (auto& hist1D : row1D) {
         hist1D.first -> Write();
       }
