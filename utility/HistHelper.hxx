@@ -146,7 +146,9 @@ namespace HistHelper {
       std::map<std::string, Binning> m_bins = {
         { "number",   {202, -1.5, 200.5} },
         { "fraction", {104, -0.1, 5.1}   },
-        { "energy",   {202, -1., 100.}   }
+        { "energy",   {202, -1., 100.}   },
+        { "eta",      {30 , -1.5, 1.5}   },
+        { "phi",      {320, -3.15, 3.15} }
       };
 
     public:
