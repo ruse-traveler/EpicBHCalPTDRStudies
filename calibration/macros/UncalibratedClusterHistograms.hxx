@@ -54,11 +54,19 @@ namespace UncalibratedClusterHistograms {
   std::vector<std::pair<std::string, HistHelper::Definition>> vecVarDef1D = {
     {
       "eLeadBHCal", 
-      {"hELeadHCal", "", {"E_{clust}^{lead} [GeV]", "a.u."}, {bins.Get("energy")}}
+      {"hELeadBHCal", "", {"E_{clust}^{lead} [GeV]", "a.u."}, {bins.Get("energy")}}
     },
     {
       "eLeadBEMC",
-      {"hELeadECal", "", {"E_{clust}^{lead} [GeV]", "a.u."}, {bins.Get("energy")}}
+      {"hELeadBEMC", "", {"E_{clust}^{lead} [GeV]", "a.u."}, {bins.Get("energy")}}
+    },
+    {
+      "eSumBHCal",
+      {"hESumBHCal", "", {"#SigmaE_{clust} [GeV]", "a.u."}, {bins.Get("energy")}}
+    },
+    {
+      "eSumBEMC",
+      {"hESumBEMC", "", {"#SigmaE_{clust} [GeV]", "a.u."}, {bins.Get("energy")}}
     }
   };
 
@@ -83,7 +91,7 @@ namespace UncalibratedClusterHistograms {
     {
       "eLeadBEMC/eSumBEMC",
       {
-        "hLeadSumFracBECal",
+        "hLeadSumFracBEMC",
         "", 
         {"{E_{clust}^{lead}/#SigmaE_{clust}", "a.u."}, 
         {bins.Get("fraction")}
@@ -142,7 +150,8 @@ namespace UncalibratedClusterHistograms {
   //! List of variables to use for resolution calculation
   // --------------------------------------------------------------------------
   std::set<std::string> setOfVarForReso = {
-    "eLeadHCalClust",
+    "eLeadBHCal",
+    "eSumBHCal"
   };
 
   // --------------------------------------------------------------------------
@@ -170,8 +179,8 @@ namespace UncalibratedClusterHistograms {
   // --------------------------------------------------------------------------
   //! Option for graphs
   // --------------------------------------------------------------------------
-  const std::pair<std::string, std::string> grResName = {"grResHist", "grResFit"};
-  const std::pair<std::string, std::string> grLinName = {"grLinHist", "grLinFit"};
+  const std::string grResName = "grUncalibResHist";
+  const std::string grLinName = "grUncalibLinHist";
 
 
 
@@ -357,14 +366,55 @@ namespace UncalibratedClusterHistograms {
       }
 
       // normalize 1d formula hists
+      for (auto& row1D : vecForm1D) {
+        for (auto& hist1D : row1D) {
+          norm1D(histNorm, hist1D.first);
+        }
+      }
       std::cout << "    Normalized histograms." << std::endl;
     }
 
     // ------------------------------------------------------------------------
-    // Fit energies and generate graphs
+    // Generate graphs
     // ------------------------------------------------------------------------
 
-    /* TODO fill in */
+    // for resolution graphs
+    std::vector<GraphHelper::Definition> vecResHist;
+    std::vector<GraphHelper::Definition> vecLinHist;
+
+    // loop over histograms
+    for (std::size_t iVar = 0; iVar < vecVar1D.front().size(); ++iVar) {
+
+      // if not being used for reso calculation, skip
+      const bool useForReso = vecVar1D[0][iVar].second;
+      if (!useForReso) continue;
+
+      // define graphs
+      vecResHist.push_back(
+        GraphHelper::Definition(grResName + "_" + vecVarDef1D[iVar].first)
+      );
+      vecLinHist.push_back(
+        GraphHelper::Definition(grLinName + "_" + vecVarDef1D[iVar].first)
+      );
+
+      // loop over particle bins
+      for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
+
+        // grab hist integral, mean, width
+        const double intHist    = vecVar1D[iBin][iVar].first -> Integral();
+        const double muValHist  = vecVar1D[iBin][iVar].first -> GetMean();
+        const double muErrHist  = vecVar1D[iBin][iVar].first -> GetMeanError();
+        const double rmsValHist = vecVar1D[iBin][iVar].first -> GetRMS();
+        const double rmsErrHist = vecVar1D[iBin][iVar].first -> GetRMSError();
+        const double resValHist = rmsValHist / muValHist;
+        const double resErrHist = std::hypot((muErrHist/muValHist), (rmsErrHist/rmsValHist));
+
+        // add points to hist graphs
+        vecResHist.back().AddPoint( {get<1>(par_bins[iBin]), resValHist, 0., resErrHist} );
+        vecLinHist.back().AddPoint( {get<1>(par_bins[iBin]), muValHist,  0., muErrHist}  );
+
+      }  // end bin loop
+    }  // end hist loop
 
     // ------------------------------------------------------------------------
     // Save and exit
@@ -386,6 +436,10 @@ namespace UncalibratedClusterHistograms {
       for (auto& hist2D : row2D) {
         hist2D -> Write();
       }
+    }
+    for (std::size_t iGraph = 0; iGraph < vecResHist.size(); ++iGraph) {
+      vecResHist[iGraph].MakeTGraphErrors() -> Write();
+      vecLinHist[iGraph].MakeTGraphErrors() -> Write();
     }
 
     // announce end
