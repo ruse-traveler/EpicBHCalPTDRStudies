@@ -96,15 +96,47 @@ namespace UncalibratedClusterHistograms {
   // --------------------------------------------------------------------------
   /*! List of pairs that define which variables to be placed in 2d histograms
    *  and the corresponding histograms. 
-   *    first  = <LIST of variables>
+   *    first  = pair of variables to be histogrammed
    *    second = histogram definition
    */
-  /* TODO
-   *   - fLeadHCal vs. hLeadHCal
-   *   - fLeadECal vs. hLeadECal
-   *   - eLeadECal vs. eLeadHCal
-   *   - eSumECal vs. eSumHCal
-   */
+  std::vector<std::pair<std::pair<std::string, std::string>, HistHelper::Definition>> vecVarDef2D = {
+    {
+      {"hLeadBHCal", "fLeadBHCal"},
+      {
+        "hLeadPhiVsEtaBHCal",
+        "",
+        {"#eta_{clust}^{lead}", "#varphi_{clust}^{lead}", "counts"},
+        {bins.Get("eta"), bins.Get("phi")}
+      }
+    },
+    {
+      {"hLeadBEMC", "fLeadBEMC"},
+      {
+        "hLeadPhiVsEtaBEMC",
+        "",
+        {"#eta_{clust}^{lead}", "#varphi_{clust}^{lead}", "counts"},
+        {bins.Get("eta"), bins.Get("phi")}
+      }
+    },
+    {
+      {"eLeadBHCal", "eLeadBEMC"},
+      {
+        "hLeadEneBEMCvsBHCal",
+        "",
+        {"E_{clust, BHCal}^{lead}", "E_{clust, BEMC}^{lead}", "counts"},
+        {bins.Get("energy"), bins.Get("energy")}
+      }
+    },
+    {
+      {"eSumBHCal", "eSumBEMC"},
+      {
+        "hSumEneBEMCvsBHCal",
+        "",
+        {"#SigmaE_{clust, BHCal}", "#SigmaE_{clust, BEMC}", "counts"},
+        {bins.Get("energy"), bins.Get("energy")}
+      }
+    }
+  };
 
   // --------------------------------------------------------------------------
   //! List of variables to use for resolution calculation
@@ -190,7 +222,7 @@ namespace UncalibratedClusterHistograms {
     }
 
     // print input
-    std::cout << "    Opened dataframe:\n"
+    std::cout << "    Opened inputs:\n"
               << "      input file  = " << in_file << "\n"
               << "      input tuple = " << in_tuple
               << std::endl;
@@ -203,20 +235,17 @@ namespace UncalibratedClusterHistograms {
     // Generate histograms
     // -----------------------------------------------------------------------
 
-    std::vector< std::vector< std::pair< TH1D*, bool > > > vecVar1D( par_bins.size() );
-    std::vector< std::vector< std::pair< TH1D*, TTreeFormula* > > > vecForm1D( par_bins.size() );
+    std::vector<std::vector<TH2D*>>                           vecVar2D( par_bins.size() );
+    std::vector<std::vector<std::pair<TH1D*, bool>>>          vecVar1D( par_bins.size() );
+    std::vector<std::vector<std::pair<TH1D*, TTreeFormula*>>> vecForm1D( par_bins.size() );
     for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
 
       // create 1d variable hists
       for (auto def : vecVarDef1D) {
-
-        // check if being used for reso calcualation
-        const bool useForReso = (setOfVarForReso.count(def.first) > 0);
-
-        // make histogram
         def.second.AppendToName("_" + get<0>(par_bins[iBin]));
-        vecVar1D[iBin].push_back( {def.second.MakeTH1(), useForReso} );
-
+        vecVar1D[iBin].push_back(
+          {def.second.MakeTH1(), (setOfVarForReso.count(def.first) > 0)}
+        );
       }  // end 1d hist loop
 
       // create 1d formula hists
@@ -235,9 +264,14 @@ namespace UncalibratedClusterHistograms {
         );
       }  // end 1d formula loop
 
-      /* TODO make 2d histograms here */
+      // create 2d variable hists
+      for (auto def : vecVarDef2D) {
+        def.second.AppendToName("_" + get<0>(par_bins[iBin]));
+        vecVar2D[iBin].push_back( def.second.MakeTH2() );
+      }  // end 2d hist loop
 
     }  // end particle bin loop
+    std::cout << "    Generated histograms." << std::endl;
 
     // ------------------------------------------------------------------------
     // Process input tuple
@@ -297,10 +331,13 @@ namespace UncalibratedClusterHistograms {
             );
           }  // end formula loop
 
-          /* TODO
-           *   - Fill 2d histograms
-           */
-
+          // fill 2d variable histograms
+          for (std::size_t iVar = 0; iVar < vecVarDef2D.size(); ++iVar) {
+            vecVar2D[iBin][iVar] -> Fill(
+              helper.GetVariable(vecVarDef2D[iVar].first.first),
+              helper.GetVariable(vecVarDef2D[iVar].first.second)
+            );
+          }  // end variable loop
         }
       }  // end bin loop
     }  // end entry loop
@@ -327,11 +364,7 @@ namespace UncalibratedClusterHistograms {
     // Fit energies and generate graphs
     // ------------------------------------------------------------------------
 
-    // for resolution graphs
-    std::vector<GraphHelper::Definition> vecResHist;
-    std::vector<GraphHelper::Definition> vecResFit;
-    std::vector<GraphHelper::Definition> vecLinHist;
-    std::vector<GraphHelper::Definition> vecLinFit;
+    /* TODO fill in */
 
     // ------------------------------------------------------------------------
     // Save and exit
@@ -347,6 +380,11 @@ namespace UncalibratedClusterHistograms {
     for (auto& row1D : vecForm1D) {
       for (auto& hist1D : row1D) {
         hist1D.first -> Write();
+      }
+    }
+    for (auto& row2D : vecVar2D) {
+      for (auto& hist2D : row2D) {
+        hist2D -> Write();
       }
     }
 
