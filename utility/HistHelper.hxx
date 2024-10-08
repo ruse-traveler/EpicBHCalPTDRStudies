@@ -231,6 +231,19 @@ namespace HistHelper {
       Binning     m_bins_y;
       Binning     m_bins_z;
 
+      // ----------------------------------------------------------------------
+      //! Make histogram title
+      // ----------------------------------------------------------------------
+      std::string MakeTitle() const {
+
+        std::string title = m_title;
+        title.append( ";" + m_title_x );
+        title.append( ";" + m_title_y );
+        title.append( ";" + m_title_z );
+        return title;
+
+      }  // end 'MakeTitle()'
+
     public:
 
       // ----------------------------------------------------------------------
@@ -279,9 +292,12 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       TH1D* MakeTH1() const {
 
+        // make hist + axis titles
+        const std::string title = MakeTitle();
+
         TH1D* hist = new TH1D(
           m_name.data(),
-          m_title.data(),
+          title.data(),
           m_bins_x.GetNum(),
           m_bins_x.GetBins().data()
         );
@@ -294,9 +310,12 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       TH2D* MakeTH2() const {
 
+        // make hist + axis titles
+        const std::string title = MakeTitle();
+
         TH2D* hist = new TH2D(
           m_name.data(),
-          m_title.data(),
+          title.data(),
           m_bins_x.GetNum(),
           m_bins_x.GetBins().data(),
           m_bins_y.GetNum(),
@@ -311,9 +330,12 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       TH3D* MakeTH3() const {
 
+        // make hist + axis titles
+        const std::string title = MakeTitle();
+
         TH3D* hist = new TH3D(
           m_name.data(),
-          m_title.data(),
+          title.data(),
           m_bins_x.GetNum(),
           m_bins_x.GetBins().data(),
           m_bins_y.GetNum(),
@@ -330,9 +352,12 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       ROOT::RDF::TH1DModel MakeTH1Model() const {
 
+        // make hist + axis titles
+        const std::string title = MakeTitle();
+
         ROOT::RDF::TH1DModel hist = ROOT::RDF::TH1DModel(
           m_name.data(),
-          m_title.data(),
+          title.data(),
           m_bins_x.GetNum(),
           m_bins_x.GetBins().data()
         );
@@ -345,9 +370,12 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       ROOT::RDF::TH2DModel MakeTH2Model() const {
 
+        // make hist + axis titles
+        const std::string title = MakeTitle();
+
         ROOT::RDF::TH2DModel hist = ROOT::RDF::TH2DModel(
           m_name.data(),
-          m_title.data(),
+          title.data(),
           m_bins_x.GetNum(),
           m_bins_x.GetBins().data(),
           m_bins_y.GetNum(),
@@ -362,9 +390,12 @@ namespace HistHelper {
       // ----------------------------------------------------------------------
       ROOT::RDF::TH3DModel MakeTH3Model() const {
 
+        // make hist + axis titles
+        const std::string title = MakeTitle();
+
         ROOT::RDF::TH3DModel hist = ROOT::RDF::TH3DModel(
           m_name.data(),
-          m_title.data(),
+          title.data(),
           m_bins_x.GetNum(),
           m_bins_x.GetBins().data(),
           m_bins_y.GetNum(),
