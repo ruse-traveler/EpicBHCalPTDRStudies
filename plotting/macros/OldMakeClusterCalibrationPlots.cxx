@@ -1,9 +1,11 @@
 // ----------------------------------------------------------------------------
-// 'MakeCalibrationPlots.C'
+// 'OldMakeCalibrationPlots.C'
 // Derek Anderson
 // 09.13.2023
 //
 // Macro to plot histograms from 'TrainAndEvaluateBHCalCalibration.C'
+//
+// NOTE: this an OLD macro and is not maintained!
 // ----------------------------------------------------------------------------
 
 // c utilties
@@ -30,7 +32,10 @@ static const UInt_t NTmvaSpec(1);
 
 
 
-void MakeCalibrationPlots() {
+void OldMakeCalibrationPlots() {
+
+  // emit deprecation warning
+  cerr << "WARNING: this an old macro that's been deprecated! Use at your own risk!" << endl;
 
   const uint32_t fColEneBin[NEneBins] = {923, 799, 809, 899, 909, 879, 889, 859, 869, 839};
   const uint32_t fMarEneBin[NEneBins] = {25,  27,  32,  26,  29,  30,  25,  27,  32,  26};
