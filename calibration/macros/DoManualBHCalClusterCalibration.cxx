@@ -24,6 +24,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
+#include <TMultiDimFit.h>
 // analysis utilities
 #include "../../utility/HistHelper.hxx"
 #include "../../utility/GraphHelper.hxx"
@@ -53,12 +54,10 @@ struct Options {
 // ============================================================================
 void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
 
-  // parameters
-  //   - TODO Maybe should go into separate header?
-  auto minimizee = [](double *x, double *par) {
-    const double eReco = par[0] * (x[0] + (par[1] * x[1]));
-    const double eDiff = x[2] - eReco;
-    const double chi2  = (eDiff * eDiff) / (x[2] * x[2]);
+  // lambda to calculate chisquare
+  auto chisquare = [](const double reco, const double par) {
+    const double diff = reco - par;
+    const double chi2 = (reco * reco) / (par * par);
     return chi2;
   };
 
@@ -71,14 +70,16 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   // --------------------------------------------------------------------------
 
   // open files
-  TFile* input  = new TFile(opt.in_file.data(),  "read");
-  TFile* output = new TFile(opt.out_file.data(), "recreate");
-  if (!input || !output) {
+  TFile* inTrain = new TFile(opt.in_file.data(),  "read");
+  TFile* inApply = new TFile(opt.in_file.data(),  "read");
+  TFile* output  = new TFile(opt.out_file.data(), "recreate");
+  if (!inTrain || !inApply || !output) {
     std::cerr << "PANIC: couldn't open a file!\n"
-              << "       input  = " << input << "\n"
-              << "       output = " << output
+              << "       inTrain = " << inTrain << "\n"
+              << "       inApply = " << inApply << "\n"
+              << "       output  = " << output
               << std::endl;
-    assert(output && input);
+    assert(output && inTrain && inApply);
   }
 
   // print input/output files
@@ -88,18 +89,21 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
             << std::endl;
 
   // grab input tuple
-  TNtuple* ntInput = (TNtuple*) input -> Get(opt.in_tuple.data());
-  if (!ntInput) {
+  TNtuple* ntInTrain = (TNtuple*) inTrain -> Get(opt.in_tuple.data());
+  TNtuple* ntInApply = (TNtuple*) inApply -> Get(opt.in_tuple.data());
+  if (!ntInTrain || !ntInApply) {
     std::cerr << "PANIC: couldn't grab input tuple!\n"
               << "       name  = " << opt.in_tuple << "\n"
-              << "       tuple = " << ntInput
+              << "       tuple = " << ntInTrain
               << std::endl;
-    assert(ntInput);
+    assert(ntInTrain && ntInApply);
   }
 
-  // set up helper and print input tuple
-  NTupleHelper in_helper( ntInput );
-  in_helper.SetBranches( ntInput );
+  // set up helpers and print input tuple
+  NTupleHelper train_helper( ntInTrain );
+  NTupleHelper apply_helper( ntInApply );
+  train_helper.SetBranches( ntInTrain );
+  apply_helper.SetBranches( ntInApply );
   std::cout << "    Grabbed input tuples:\n"
             << "      tuple = " << opt.in_tuple
             << std::endl;
@@ -117,7 +121,9 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
     {"hEneRawSumHCal", "", {"#SigmaE_{h} [GeV]", "a.u."}, {bins.Get("energy")}},
     {"hEneRawSumECal", "", {"#SigmaE_{e} [GeV]", "a.u."}, {bins.Get("energy")}},
     {"hEneRawSumBoth", "", {"#SigmaE = #SigmaE_{h} + #SigmaE_{e} [GeV]", "a.u."}, {bins.Get("energy")}},
-    {"hChi2RawSum",    "", {"#chi^{2} = (E_{par} - #SigmaE)^{2} / E_{par}^{2}", "a.u."}, {bins.Get("chi2")}}
+    {"hChi2RawSum",    "", {"#chi^{2} = (E_{par} - #SigmaE)^{2} / E_{par}^{2}", "a.u."}, {bins.Get("chi2")}},
+    {"hEneCalibSum",   "", {"#SigmaE_{c} = A(#SigmaE_{e} + B#SigmaE_{h}) [GeV]", "a.u."}, {bins.Get("energy")}},
+    {"hChi2CalibSum",  "", {"#chi^{2} = (E_{par} - #SigmaE_{c})^{2} / E_{par}^{2}", "a.u."}, {bins.Get("chi2")}}
   };
 
   // 2d histograms
@@ -125,13 +131,25 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
     {
       "hEneRawSumVsPar",
       "",
-      {"E_{par} [GeV]", "#SigamE = #SigmaE_{H} + #SigmaE_{E} [GeV]", "a.u."},
+      {"E_{par} [GeV]", "#SigmaE = #SigmaE_{h} + #SigmaE_{e} [GeV]", "a.u."},
       {bins.Get("energy"), bins.Get("energy")}
     },
     {
       "hChi2RawSumVsPar",
       "",
       {"E_{par} [GeV]", "#chi^{2} = (E_{par} - #SigmaE)^{2} / E_{par}^{2}"},
+      {bins.Get("energy"), bins.Get("chi2")}
+    },
+    {
+      "hEneCalibVsPar",
+      "",
+      {"E_{par} [GeV]", "#SigmaE_{c} = A(#SigmaE_{e} + B#SigmaE_{h}) [GeV]", "a.u."},
+      {bins.Get("energy"), bins.Get("energy")}
+    },
+    {
+      "hChi2CalibVsPar",
+      "",
+      {"E_{par} [GeV]", "#chi^{2} = (E_{par} - #SigmaE_{c})^{2} / E_{par}^{2}"},
       {bins.Get("energy"), bins.Get("chi2")}
     }
   };
@@ -153,21 +171,38 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
   }
 
   // --------------------------------------------------------------------------
-  // Run calculations
+  // Prepare multidimensional fitter
   // --------------------------------------------------------------------------
 
-  // get number of entries for application
-  const uint64_t nEntries = ntInput -> GetEntries();
-  cout << "    Processing: " << nEntries << " events" << endl;
+  // powers
+  //  - FIXME probably should avoid c arrays
+  int powers[2] = {1, 1};
+
+  TMultiDimFit* mdFit = new TMultiDimFit(2, TMultiDimFit::kLegendre, "v");
+  mdFit -> SetPowers( powers, 1 );
+  mdFit -> SetMaxPowers( powers );
+  mdFit -> SetMaxTerms( 1 );
+  mdFit -> SetPowerLimit( 1 );
+  mdFit -> SetMinAngle(0.);
+  mdFit -> SetMinRelativeError( 0.01 );
+  mdFit -> Print("p");
+
+  // --------------------------------------------------------------------------
+  // Process training ntuple
+  // --------------------------------------------------------------------------
+
+  // get number of entries for training
+  const uint64_t nTrain = ntInTrain -> GetEntries();
+  cout << "    Processing training tuple: " << nTrain << " events" << endl;
 
   // loop over entries in input tuple
   uint64_t nBytes = 0;
-  for (uint64_t iEntry = 0; iEntry < nEntries; iEntry++) {
+  for (uint64_t iTrain = 0; iTrain < nTrain; iTrain++) {
 
     // announce progress
     if (opt.do_progress) {
-      std::cout << "      Processing entry " << iEntry + 1 << "/" << nEntries << "...";
-      if (iEntry + 1 < nEntries) {
+      std::cout << "      Processing entry " << iTrain + 1 << "/" << nTrain << "...";
+      if (iTrain + 1 < nTrain) {
         std::cout << "\r" << std::flush;
       } else {
         std::cout << std::endl;
@@ -175,18 +210,18 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
     }
 
     // grab entry
-    const uint64_t bytes = ntInput -> GetEntry(iEntry);
+    const uint64_t bytes = ntInTrain -> GetEntry(iTrain);
     if (bytes < 0.) {
-      std::cerr << "WARNING error in entry #" << iEntry << "! Aborting loop!" << std::endl;
+      std::cerr << "WARNING error in entry #" << iTrain << "! Aborting loop!" << std::endl;
       break;
     } else {
       nBytes += bytes;
     }
 
     // grab raw variables
-    const double ePar     = in_helper.GetVariable("ePar");
-    const double eSumHCal = in_helper.GetVariable("eSumBHCal");
-    const double eSumECal = in_helper.GetVariable("eSumBEMC");
+    const double ePar     = train_helper.GetVariable("ePar");
+    const double eSumHCal = train_helper.GetVariable("eSumBHCal");
+    const double eSumECal = train_helper.GetVariable("eSumBEMC");
     const double eSumRaw  = eSumHCal + eSumECal;
 
     // fill raw energy histograms
@@ -196,18 +231,83 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
     mapHist2D["hEneRawSumVsPar"] -> Fill(ePar, eSumRaw);
 
     // calculate chi2 on uncalibrated energies
-    //   - FIXME probably should avoid c arrays...
-    double x[3]   = {eSumECal, eSumHCal, ePar};
-    double par[3] = {1.0, 1.0, 1.0};  // dummy values for now
-    double chi2   = minimizee(x, par);
+    double chi2 = chisquare(eSumRaw, ePar);
 
     // fill raw chi2 histograms
     mapHist1D["hChi2RawSum"]      -> Fill(chi2);
     mapHist2D["hChi2RawSumVsPar"] -> Fill(ePar, chi2);
 
-  }  // end entry loop
-  std::cout << "    Entry loop finished." << std::endl;
+    // add row to fitter
+    //   - FIXME probably should avoid c arrays...
+    double mdx[2] = {eSumECal, eSumHCal};
+    mdFit -> AddRow( mdx, ePar );
 
+  }  // end entry loop
+  std::cout << "    Training loop finished." << std::endl;
+
+
+  // now run fitter calculations
+  mdFit -> Print("s");
+  mdFit -> MakeHistograms();
+  mdFit -> FindParameterization();
+  mdFit -> Print("rc");
+
+  // --------------------------------------------------------------------------
+  // Process application tuple
+  //  -------------------------------------------------------------------------
+
+  // get number of entries for application
+  const uint64_t nApply = ntInApply -> GetEntries();
+  cout << "    Processing application tuple: " << nApply << " events" << endl;
+
+  // loop over entries in input tuple
+  nBytes = 0;
+  for (uint64_t iApply = 0; iApply < nApply; iApply++) {
+
+    // announce progress
+    if (opt.do_progress) {
+      std::cout << "      Processing entry " << iApply + 1 << "/" << nApply << "...";
+      if (iApply + 1 < nApply) {
+        std::cout << "\r" << std::flush;
+      } else {
+        std::cout << std::endl;
+      }
+    }
+
+    // grab entry
+    const uint64_t bytes = ntInApply -> GetEntry(iApply);
+    if (bytes < 0.) {
+      std::cerr << "WARNING error in entry #" << iApply << "! Aborting loop!" << std::endl;
+      break;
+    } else {
+      nBytes += bytes;
+    }
+
+    // grab raw variables
+    const double ePar     = apply_helper.GetVariable("ePar");
+    const double eSumHCal = apply_helper.GetVariable("eSumBHCal");
+    const double eSumECal = apply_helper.GetVariable("eSumBEMC");
+
+    // add test row to fitter
+    double mdx2[2] = {eSumECal, eSumHCal};
+    mdFit -> AddTestRow( mdx2, ePar );
+
+    // and evaluate current parameterization
+    const double eCalib = mdFit -> Eval( mdx2 );
+    const double chi2   = chisquare(eCalib, ePar);
+
+    // fill calibrated histograms
+    mapHist1D["hEneCalibSum"]    -> Fill(eCalib);
+    mapHist1D["hChi2CalibSum"]   -> Fill(chi2);
+    mapHist2D["hEneCalibVsPar"]  -> Fill(ePar, eCalib);
+    mapHist2D["hChi2CalibVsPar"] -> Fill(ePar, chi2);
+
+  }  // end entry loop
+  std::cout << "    Application loop finished." << std::endl;
+
+  // now try fitting
+  mdFit -> Fit("M");
+  mdFit -> Print("fc v");
 
   // --------------------------------------------------------------------------
   // Save output and exit
@@ -222,11 +322,19 @@ void DoManualBHCalClusterCalibration(const Options& opt = DefaultOptions) {
     hist2D.second -> Write();
   }
 
+  // TEST
+  for (auto hist : *(mdFit -> GetHistograms())) {
+    hist -> Write();
+  }
+  mdFit -> MakeCode("TMultiDimFit.cxx");
+
   // close files
-  output -> cd();
-  output -> Close();
-  input  -> cd();
-  input  -> Close();
+  output  -> cd();
+  output  -> Close();
+  inTrain -> cd();
+  inTrain -> Close();
+  inApply -> cd();
+  inApply -> Close();
 
   // announce end & exit
   std::cout << "  Finished manual calibration macro!\n" << std::endl;
