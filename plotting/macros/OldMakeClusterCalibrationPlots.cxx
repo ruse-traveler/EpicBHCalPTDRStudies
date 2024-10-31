@@ -26,51 +26,38 @@ static const UInt_t NTxt(3);
 static const UInt_t NVtx(4);
 static const UInt_t NHist(4);
 static const UInt_t NRange(2);
-static const UInt_t NEneBins(10);
+static const UInt_t NEneBins(7);
 static const UInt_t NTmvaVar(28);
 static const UInt_t NTmvaSpec(1);
 
 
 
-void OldMakeCalibrationPlots() {
+void OldMakeClusterCalibrationPlots() {
 
   // emit deprecation warning
   cerr << "WARNING: this an old macro that's been deprecated! Use at your own risk!" << endl;
 
-  const uint32_t fColEneBin[NEneBins] = {923, 799, 809, 899, 909, 879, 889, 859, 869, 839};
-  const uint32_t fMarEneBin[NEneBins] = {25,  27,  32,  26,  29,  30,  25,  27,  32,  26};
-  const string   sHCalEne[NEneBins] = {
-    "hHCalEne_ene2",
-    "hHCalEne_ene3",
-    "hHCalEne_ene4",
-    "hHCalEne_ene5",
-    "hHCalEne_ene6",
-    "hHCalEne_ene8",
-    "hHCalEne_ene10",
-    "hHCalEne_ene12",
-    "hHCalEne_ene16",
-    "hHCalEne_ene20"
-  };
-  const string sHCalDiff[NEneBins] = {
-    "hHCalDiff_ene2",
-    "hHCalDiff_ene3",
-    "hHCalDiff_ene4",
-    "hHCalDiff_ene5",
-    "hHCalDiff_ene6",
-    "hHCalDiff_ene8",
-    "hHCalDiff_ene10",
-    "hHCalDiff_ene12",
-    "hHCalDiff_ene16",
-    "hHCalDiff_ene20"
-  };
-  const string sEneTitleX("E_{lead}^{BHCal} [GeV]");
-  const string sDiffTitleX("#DeltaE / E_{par}");
-  const string sTitleY("arbitrary units");
+  // announce start
+  cout << "\n  Beginning energy plotting macro..." << endl;
 
-  // generic resolution parameters
-  const double enePar[NEneBins]    = {2.,  3.,  4.,  5.,  6.,  8,   10.,  12.,  16.,  20.};
-  const double eneParMin[NEneBins] = {1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 9.5,  11.5, 13.5, 18.5};
-  const double eneParMax[NEneBins] = {2.5, 3.5, 4.5, 5.5, 6.5, 9.5, 11.5, 13.5, 18.5, 21.5};
+  // i/o parameters
+  const string sInFile("forBHCalOnlyCheck.evt5Ke120pim_central.d31m10y2024.hists.root");
+  const string sOutFile("bhcalOnlyCheck_sumClustEne.evt5Ke120pim_central.d31m10y2024.root");
+
+  // histogram parameters
+  const uint32_t fColEneBin[NEneBins] = {799, 809, 899, 909, 879, 889, 859};
+  const uint32_t fMarEneBin[NEneBins] = {25,  27,  32,  26,  29,  30,  25};
+  const string   sHCalEne[NEneBins] = {
+    "hESumBHCal_Ene1",
+    "hESumBHCal_Ene2",
+    "hESumBHCal_Ene5",
+    "hESumBHCal_Ene7",
+    "hESumBHCal_Ene10",
+    "hESumBHCal_Ene15",
+    "hESumBHCal_Ene20"
+  };
+  const string sEneTitleX("#SigmaE_{clust}^{BHCal} [GeV]");
+  const string sTitleY("a. u.");
 
   // style parameters
   const UInt_t fFil(0);
@@ -83,24 +70,44 @@ void OldMakeCalibrationPlots() {
   const string sTitle("");
 
   // text parameters
-  const string sHeader("#bf{Tower Clusters} (reduced energy param.s)");
+  const string sHeader("");
   const string sTxt[NTxt] = {
-    "#bf{ePIC} simulation [23.05.0]",
+    "#bf{ePIC} simulation [24.10.0]",
     "single #pi^{-}",
-    "#bf{Imaging Configuration}"
+    "#bf{BHCal only}"
   };
   const string sLabel[NEneBins] = {
+    "E_{par} = 1 GeV",
     "E_{par} = 2 GeV",
-    "E_{par} = 3 GeV",
-    "E_{par} = 4 GeV",
     "E_{par} = 5 GeV",
-    "E_{par} = 6 GeV",
-    "E_{par} = 8 GeV",
+    "E_{par} = 7 GeV",
     "E_{par} = 10 GeV",
-    "E_{par} = 12 GeV",
-    "E_{par} = 16 GeV",
+    "E_{par} = 15 GeV",
     "E_{par} = 20 GeV"
   };
+
+  // open files
+  TFile* fInput  = new TFile(sInFile.data(), "read");
+  TFile* fOutput = new TFile(sOutFile.data(), "recreate");
+  if (!fInput || !fOutput) {
+    cerr << "PANIC: can't open a file!\n"
+         << "       input  = " << fInput << "\n"
+         << "       output = " << fOutput
+         << endl;
+    return;
+  }
+  cout << "    Opened files." << endl;
+
+  // grab histograms
+  TH1D* hHCalEneBin[NEneBins];
+  for (UInt_t iEneBin = 0; iEneBin < NEneBins; iEneBin++) {
+    hHCalEneBin[iEneBin] = (TH1D*) fInput -> Get(sHCalEne[iEneBin].data());
+    if (!hHCalEneBin[iEneBin]) {
+      cerr << "PANIC: couldn't grab histogram '" << sHCalEne << "'!" << endl;
+      return;
+    }
+  }
+  cout << "    Grabbed histograms." << endl;
 
   // set histogram styles
   for (UInt_t iEneBin = 0; iEneBin < NEneBins; iEneBin++) {
@@ -124,12 +131,12 @@ void OldMakeCalibrationPlots() {
   cout << "    Set styles of resolution histograms." << endl;
 
   // make legend
-  const UInt_t  fColLeg      = 0;
-  const UInt_t  fFilLeg      = 0;
-  const UInt_t  fLinLeg      = 0;
-  const float hObjLeg      = NEneBins * 0.05;
-  const float yObjLeg      = 0.1 + hObjLeg;
-  const float fLegXY[NVtx] = {0.1, 0.1, 0.3, yObjLeg};
+  const UInt_t fColLeg      = 0;
+  const UInt_t fFilLeg      = 0;
+  const UInt_t fLinLeg      = 0;
+  const float  hObjLeg      = NEneBins * 0.05;
+  const float  yObjLeg      = 0.1 + hObjLeg;
+  const float  fLegXY[NVtx] = {0.1, 0.1, 0.3, yObjLeg};
 
   TLegend *leg = new TLegend(fLegXY[0], fLegXY[1], fLegXY[2], fLegXY[3], sHeader.data());
   leg -> SetFillColor(fColLeg);
