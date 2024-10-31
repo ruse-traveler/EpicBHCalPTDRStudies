@@ -29,9 +29,9 @@
 #include <TGraphErrors.h>
 #include <TTreeFormula.h>
 // analysis utilities
-#include "../ForBHCalTests/HistHelper.hxx"
-#include "../ForBHCalTests/GraphHelper.hxx"
-#include "../ForBHCalTests/NTupleHelper.hxx"
+#include "../../utility/HistHelper.hxx"
+#include "../../utility/GraphHelper.hxx"
+#include "../../utility/NTupleHelper.hxx"
 
 
 
@@ -153,8 +153,8 @@ namespace BHCalOnlyHistograms {
   // --------------------------------------------------------------------------
   //! Option for graphs
   // --------------------------------------------------------------------------
-  const std::string grResName = "grBHCalOnlyResHist";
-  const std::string grLinName = "grBHCalOnlyLinHist";
+  const std::pair<std::string, std::string> grResName = {"grBHCalOnlyResHist", "grBHCalOnlyResFit"};
+  const std::pair<std::string, std::string> grLinName = {"grBHCalOnlyLinHist", "grBHCalOnlyLinFit"};
 
 
 
@@ -354,23 +354,32 @@ namespace BHCalOnlyHistograms {
 
     // for resolution graphs
     std::vector<GraphHelper::Definition> vecResHist;
+    std::vector<GraphHelper::Definition> vecResFit;
     std::vector<GraphHelper::Definition> vecLinHist;
+    std::vector<GraphHelper::Definition> vecLinFit;
 
     // loop over histograms
+    std::vector<std::vector<TF1*>> vecFit1D( vecVar1D.front().size() );
     for (std::size_t iVar = 0; iVar < vecVar1D.front().size(); ++iVar) {
 
       // if not being used for reso calculation, skip
       const bool useForReso = vecVar1D[0][iVar].second;
-      if (!useForReso) continue;
+      if (!useForReso) continue; 
 
       // define graphs
       vecResHist.push_back(
-        GraphHelper::Definition(grResName + "_" + vecVarDef1D[iVar].first)
+        GraphHelper::Definition(grResName.first + "_" + vecVarDef1D[iVar].first)
+      );
+      vecResFit.push_back(
+        GraphHelper::Definition(grResName.second + "_" + vecVarDef1D[iVar].first)
       );
       vecLinHist.push_back(
-        GraphHelper::Definition(grLinName + "_" + vecVarDef1D[iVar].first)
+        GraphHelper::Definition(grLinName.first + "_" + vecVarDef1D[iVar].first)
       );
-
+      vecLinFit.push_back(
+        GraphHelper::Definition(grLinName.second + "_" + vecVarDef1D[iVar].first)
+      );
+  
       // loop over particle bins
       for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
 
@@ -386,6 +395,36 @@ namespace BHCalOnlyHistograms {
         // add points to hist graphs
         vecResHist.back().AddPoint( {get<1>(par_bins[iBin]), resValHist, 0., resErrHist} );
         vecLinHist.back().AddPoint( {get<1>(par_bins[iBin]), muValHist,  0., muErrHist}  );
+
+        // create fit name
+        std::string fitName( vecVar1D[iBin][iVar].first -> GetName() );
+        fitName[0] = 'f';
+
+        // calculate fit ranges
+        const double fitMin = muValHist - (nSigFit * rmsValHist);
+        const double fitMax = muValHist + (nSigFit * rmsValHist);
+
+        // create fit function
+        TF1* fit = new TF1(fitName.data(), fitFunc.data(), fitMin, fitMax);
+        fit -> SetParameter(0, intHist);
+        fit -> SetParameter(1, muValHist);
+        fit -> SetParameter(2, rmsValHist);
+
+        // fit histogram
+        vecVar1D[iBin][iVar].first -> Fit(fitName.data(), fitOpt.data());
+        vecFit1D[iVar].push_back(fit);
+
+        // grab fit mean, width
+        const double muValFit  = fit -> GetParameter(1);
+        const double muErrFit  = fit -> GetParError(1);
+        const double sigValFit = fit -> GetParameter(2);
+        const double sigErrFit = fit -> GetParError(2);
+        const double resValFit = sigValFit / muValFit;
+        const double resErrFit = std::hypot((muErrFit/muValFit), (sigErrFit/sigValFit));
+
+        // add points to hist graphs
+        vecResFit.back().AddPoint( {get<1>(par_bins[iBin]), resValFit, 0., resErrFit} );
+        vecLinFit.back().AddPoint( {get<1>(par_bins[iBin]), muValFit,  0., muErrFit}  );
 
       }  // end bin loop
     }  // end hist loop
@@ -414,6 +453,8 @@ namespace BHCalOnlyHistograms {
     for (std::size_t iGraph = 0; iGraph < vecResHist.size(); ++iGraph) {
       vecResHist[iGraph].MakeTGraphErrors() -> Write();
       vecLinHist[iGraph].MakeTGraphErrors() -> Write();
+      vecResFit[iGraph].MakeTGraphErrors()  -> Write();
+      vecLinFit[iGraph].MakeTGraphErrors()  -> Write();
     }
 
     // announce end
