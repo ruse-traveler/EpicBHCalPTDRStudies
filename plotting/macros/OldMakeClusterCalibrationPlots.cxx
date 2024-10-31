@@ -104,38 +104,22 @@ void OldMakeCalibrationPlots() {
 
   // set histogram styles
   for (UInt_t iEneBin = 0; iEneBin < NEneBins; iEneBin++) {
-    hHCalEneBin[iEneBin]  -> SetMarkerColor(fColEneBin[iEneBin]);
-    hHCalEneBin[iEneBin]  -> SetMarkerStyle(fMarEneBin[iEneBin]);
-    hHCalEneBin[iEneBin]  -> SetLineColor(fColEneBin[iEneBin]);
-    hHCalEneBin[iEneBin]  -> SetLineStyle(fLin);
-    hHCalEneBin[iEneBin]  -> SetFillColor(fColEneBin[iEneBin]);
-    hHCalEneBin[iEneBin]  -> SetFillStyle(fFil);
-    hHCalEneBin[iEneBin]  -> SetTitle(sTitle.data());
-    hHCalEneBin[iEneBin]  -> SetTitleFont(fTxt);
-    hHCalEneBin[iEneBin]  -> GetXaxis() -> SetTitle(sEneTitleX.data());
-    hHCalEneBin[iEneBin]  -> GetXaxis() -> SetTitleFont(fTxt);
-    hHCalEneBin[iEneBin]  -> GetXaxis() -> SetTitleOffset(fOffX);
-    hHCalEneBin[iEneBin]  -> GetXaxis() -> CenterTitle(fCenter);
-    hHCalEneBin[iEneBin]  -> GetYaxis() -> SetTitle(sTitleY.data());
-    hHCalEneBin[iEneBin]  -> GetYaxis() -> SetTitleFont(fTxt);
-    hHCalEneBin[iEneBin]  -> GetYaxis() -> SetTitleOffset(fOffY);
-    hHCalEneBin[iEneBin]  -> GetYaxis() -> CenterTitle(fCenter);
-    hHCalDiffBin[iEneBin] -> SetMarkerColor(fColEneBin[iEneBin]);
-    hHCalDiffBin[iEneBin] -> SetMarkerStyle(fMarEneBin[iEneBin]);
-    hHCalDiffBin[iEneBin] -> SetLineColor(fColEneBin[iEneBin]);
-    hHCalDiffBin[iEneBin] -> SetLineStyle(fLin);
-    hHCalDiffBin[iEneBin] -> SetFillColor(fColEneBin[iEneBin]);
-    hHCalDiffBin[iEneBin] -> SetFillStyle(fFil);
-    hHCalDiffBin[iEneBin] -> SetTitle(sTitle.data());
-    hHCalDiffBin[iEneBin] -> SetTitleFont(fTxt);
-    hHCalDiffBin[iEneBin] -> GetXaxis() -> SetTitle(sDiffTitleX.data());
-    hHCalDiffBin[iEneBin] -> GetXaxis() -> SetTitleFont(fTxt);
-    hHCalDiffBin[iEneBin] -> GetXaxis() -> SetTitleOffset(fOffX);
-    hHCalDiffBin[iEneBin] -> GetXaxis() -> CenterTitle(fCenter);
-    hHCalDiffBin[iEneBin] -> GetYaxis() -> SetTitle(sTitleY.data());
-    hHCalDiffBin[iEneBin] -> GetYaxis() -> SetTitleFont(fTxt);
-    hHCalDiffBin[iEneBin] -> GetYaxis() -> SetTitleOffset(fOffY);
-    hHCalDiffBin[iEneBin] -> GetYaxis() -> CenterTitle(fCenter);
+    hHCalEneBin[iEneBin] -> SetMarkerColor(fColEneBin[iEneBin]);
+    hHCalEneBin[iEneBin] -> SetMarkerStyle(fMarEneBin[iEneBin]);
+    hHCalEneBin[iEneBin] -> SetLineColor(fColEneBin[iEneBin]);
+    hHCalEneBin[iEneBin] -> SetLineStyle(fLin);
+    hHCalEneBin[iEneBin] -> SetFillColor(fColEneBin[iEneBin]);
+    hHCalEneBin[iEneBin] -> SetFillStyle(fFil);
+    hHCalEneBin[iEneBin] -> SetTitle(sTitle.data());
+    hHCalEneBin[iEneBin] -> SetTitleFont(fTxt);
+    hHCalEneBin[iEneBin] -> GetXaxis() -> SetTitle(sEneTitleX.data());
+    hHCalEneBin[iEneBin] -> GetXaxis() -> SetTitleFont(fTxt);
+    hHCalEneBin[iEneBin] -> GetXaxis() -> SetTitleOffset(fOffX);
+    hHCalEneBin[iEneBin] -> GetXaxis() -> CenterTitle(fCenter);
+    hHCalEneBin[iEneBin] -> GetYaxis() -> SetTitle(sTitleY.data());
+    hHCalEneBin[iEneBin] -> GetYaxis() -> SetTitleFont(fTxt);
+    hHCalEneBin[iEneBin] -> GetYaxis() -> SetTitleOffset(fOffY);
+    hHCalEneBin[iEneBin] -> GetYaxis() -> CenterTitle(fCenter);
   }
   cout << "    Set styles of resolution histograms." << endl;
 
@@ -180,19 +164,19 @@ void OldMakeCalibrationPlots() {
   cout << "    Made text." << endl;
 
   // plot fit distributions
-  const UInt_t  width(750);
-  const UInt_t  height(750);
-  const UInt_t  fMode(0);
-  const UInt_t  fBord(2);
-  const UInt_t  fGrid(0);
-  const UInt_t  fTick(1);
-  const UInt_t  fLogX(0);
-  const UInt_t  fLogY(1);
-  const UInt_t  fFrame(0);
-  const float fMarginL(0.15);
-  const float fMarginR(0.02);
-  const float fMarginT(0.02);
-  const float fMarginB(0.15);
+  const UInt_t width(750);
+  const UInt_t height(750);
+  const UInt_t fMode(0);
+  const UInt_t fBord(2);
+  const UInt_t fGrid(0);
+  const UInt_t fTick(1);
+  const UInt_t fLogX(0);
+  const UInt_t fLogY(1);
+  const UInt_t fFrame(0);
+  const float  fMarginL(0.15);
+  const float  fMarginR(0.02);
+  const float  fMarginT(0.02);
+  const float  fMarginB(0.15);
 
   TCanvas *cResoEne = new TCanvas("cResoEne", "", width, height);
   cResoEne       -> SetGrid(fGrid, fGrid);
@@ -216,30 +200,6 @@ void OldMakeCalibrationPlots() {
   fOutput  -> cd();
   cResoEne -> Write();
   cResoEne -> Close();
-
-  TCanvas *cResoDiff = new TCanvas("cResoDiff", "", width, height);
-  cResoDiff       -> SetGrid(fGrid, fGrid);
-  cResoDiff       -> SetTicks(fTick, fTick);
-  cResoDiff       -> SetBorderMode(fMode);
-  cResoDiff       -> SetBorderSize(fBord);
-  cResoDiff       -> SetFrameBorderMode(fFrame);
-  cResoDiff       -> SetLeftMargin(fMarginL);
-  cResoDiff       -> SetRightMargin(fMarginR);
-  cResoDiff       -> SetTopMargin(fMarginT);
-  cResoDiff       -> SetBottomMargin(fMarginB);
-  cResoDiff       -> SetLogx(fLogX);
-  cResoDiff       -> SetLogy(fLogY);
-  cResoDiff       -> cd();
-  cResoDiff       -> cd();
-  hHCalDiffBin[0] -> Draw();
-  for (UInt_t iEneBin = 1; iEneBin < NEneBins; iEneBin++) {
-    hHCalDiffBin[iEneBin] -> Draw("same");
-  }
-  leg       -> Draw();
-  leg       -> Draw();
-  fOutput   -> cd();
-  cResoDiff -> Write();
-  cResoDiff -> Close();
   cout << "    Made resolution plots." << endl;
 
 }
