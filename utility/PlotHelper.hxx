@@ -713,6 +713,85 @@ namespace PlotHelper {
 
 
   // ==========================================================================
+  //! General options for pads/canvases
+  // ==========================================================================
+  /*! A small struct to consolidate options
+   *  common to both TPads & TCanvases
+   */  
+  struct PadOpts {
+
+    // members
+    uint32_t logx  = 0;
+    uint32_t logy  = 0;
+    uint32_t tickx = 1;
+    uint32_t ticky = 1;
+    uint32_t gridx = 0;
+    uint32_t gridy = 0;
+    uint32_t bmode = 0;
+    uint32_t bsize = 2;
+    uint32_t frame = 0;
+
+    // ------------------------------------------------------------------------
+    //! Apply options to a TPad or TCanvas
+    // ------------------------------------------------------------------------
+    template <typename T> void Apply(T* pad) const {
+
+      pad -> SetLogx(logx);
+      pad -> SetLogy(logy);
+      pad -> SetTicks(tickx, ticky);
+      pad -> SetGrid(gridx, gridy);
+      pad -> SetBorderMode(bmode);
+      pad -> SetBorderSize(bsize);
+      pad -> SetFrameBorderMode(frame);
+      return;
+
+    }  // end 'Apply(T*)'
+
+    // ------------------------------------------------------------------------
+    //! default ctor/dtor
+    // ------------------------------------------------------------------------
+    PadOpts()  {};
+    ~PadOpts() {};
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting only log values
+    // ------------------------------------------------------------------------
+    PadOpts(const std::pair<uint32_t, uint32_t> log) {
+
+      logx = log.first;
+      logy = log.second;
+
+    }  // end ctor(std::pair<uint32_t, uint32_t>)'
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting all arguments
+    // ------------------------------------------------------------------------
+    PadOpts(
+      const std::pair<uint32_t, uint32_t> log,
+      const std::pair<uint32_t, uint32_t> tick,
+      const std::pair<uint32_t, uint32_t> grid,
+      const uint32_t mode = 0,
+      const uint32_t size = 2,
+      const uint32_t framearg = 0
+    ) {
+
+      logx  = log.first;
+      logy  = log.second;
+      tickx = tick.first;
+      ticky = tick.second;
+      gridx = grid.first;
+      gridy = grid.second;
+      bmode = mode;
+      bsize = size;
+      frame = framearg;
+
+    }  // end ctor(std::pair<uint32_t, uint32_t> x 3, uint32_t x 3)'
+
+  };  // end Options
+
+
+
+  // ==========================================================================
   //! Pad definition
   // ==========================================================================
   /*! A small class to consolidate necessary data
@@ -720,23 +799,9 @@ namespace PlotHelper {
    */  
   class Pad {
 
-    public:
-
-      // TODO this might be better as a standalone stuct...
-      struct Options {
-
-        /* TODO fill in */
-
-        void Apply(TPad* pad) const {
-          /* TODO fill in */
-          return;
-        }  // end 'Apply(TPad*)'
-
-      };  // end Options
-
     private:
 
-      Options     m_opts;
+      PadOpts     m_opts;
       Vertices    m_vtxs;
       Margins     m_mgns;
       std::string m_name;
@@ -747,7 +812,7 @@ namespace PlotHelper {
       // ----------------------------------------------------------------------
       //! Getters
       // ----------------------------------------------------------------------
-      Options     GetOptions()  const {return m_opts;}
+      PadOpts     GetOptions()  const {return m_opts;}
       Vertices    GetVertices() const {return m_vtxs;}
       Margins     GetMargins()  const {return m_mgns;}
       std::string GetName()     const {return m_name;}
@@ -756,7 +821,7 @@ namespace PlotHelper {
       // ----------------------------------------------------------------------
       //! Setters
       // ----------------------------------------------------------------------
-      void SetOptions(const Options& opts)   {m_opts  = opts;}
+      void SetOptions(const PadOpts& opts)   {m_opts  = opts;}
       void SetVertices(const Vertices& vtxs) {m_vtxs  = vtxs;}
       void SetMargins(const Margins& mgns)   {m_mgns  = mgns;}
       void SetName(const std::string& name)  {m_name  = name;}
@@ -803,7 +868,7 @@ namespace PlotHelper {
         const std::string& title,
         const Vertices& vtxs,
         const Margins& mgns,
-        const Options& opts
+        const PadOpts& opts
       ) {
 
         m_name  = name;
@@ -812,7 +877,7 @@ namespace PlotHelper {
         m_mgns  = mgns;
         m_opts  = opts;
 
-      }  // end ctor(std::string& x 2, Vertices&, Margins&, Options&)'
+      }  // end ctor(std::string& x 2, Vertices&, Margins&, PadOpts&)'
 
   };  // end Pad
 
