@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <optional>
 #include <algorithm>
 // root libraries
 #include <TH1.h>
@@ -50,6 +51,25 @@ namespace PlotHelper {
   //! enum for different axes
   // ==========================================================================
   enum Axis {X, Y, Z};
+
+
+
+  // ==========================================================================
+  //! Calculate a height based on line spacing
+  // ==========================================================================
+  /*! Helper function to calculate how high a text box/legend
+   *  should be based on line spacing and no. of lines.
+   */
+  float GetHeight(const std::size_t nlines, const float spacing, std::optional<float> off) {
+
+    float height = nlines * spacing;
+    if (off.has_value()) {
+      height += off.value();
+    }
+    return height;
+
+  }  // end 'GetHeight(std::size_t float, std::optional<float>)'
+
 
 
   // ==========================================================================
