@@ -40,6 +40,13 @@
 namespace PlotHelper {
 
   // ==========================================================================
+  //! Convenient types
+  // ==========================================================================
+  typedef std::array<float, 4>     Vertices;
+  typedef std::vector<std::string> TextList;
+
+
+  // ==========================================================================
   //! enum for different axes
   // ==========================================================================
   enum Axis {X, Y, Z};
@@ -371,6 +378,22 @@ namespace PlotHelper {
       }  // end 'ApplyStyle(THN*)'
 
       // ----------------------------------------------------------------------
+      //! Apply styles to text box
+      // ----------------------------------------------------------------------
+      /*! n.b. this assumes the fill and border of the
+       *  TPave will be the same color.
+       */
+      void ApplyStyle(TPaveText* text) const {
+
+        text -> SetFillColor( m_plot.color );
+	text -> SetFillStyle( m_plot.fill );
+	text -> SetLineColor( m_plot.color );
+	text -> SetLineStyle( m_plot.line );
+        return;
+
+      }  // end 'ApplyStyle(TPaveText*)'
+      
+      // ----------------------------------------------------------------------
       //! default ctor/dtor
       // ----------------------------------------------------------------------
       Style()  {};
@@ -459,17 +482,68 @@ namespace PlotHelper {
 
     private:
 
-      /* TODO fill in */
+      // data members
+      TextList    m_text;
+      Vertices    m_vtxs;
+      std::string m_opt;
 
     public:
 
-      /* TODO fill in */
+      // ----------------------------------------------------------------------
+      //! Getters
+      // ----------------------------------------------------------------------
+      TextList    GetText()     const {return m_text;}
+      Vertices    GetVertices() const {return m_vtxs;}
+      std::string GetOption()   const {return m_opt;}
 
+      // ----------------------------------------------------------------------
+      //! Setters
+      // ----------------------------------------------------------------------
+      void SetText(const TextList& text)     {m_text = text;}
+      void SetVertices(const Vertices& vtxs) {m_vtxs = vtxs;}
+      void SetOption(const std::string& opt) {m_opt  = opt;}
+
+      // ----------------------------------------------------------------------
+      //! Add a line of text
+      // ----------------------------------------------------------------------
+      void AddText(const std::string& line) {
+
+        m_text.push_back( line );
+	return;
+
+      }  // end 'AddText(std::string&)'
+
+      // ----------------------------------------------------------------------
+      //! Create a TPaveText*
+      // ----------------------------------------------------------------------
+      TPaveText* MakeTPaveText() {
+
+        TPaveText* pt = new TPaveText( m_vtxs[0], m_vtxs[1], m_vtxs[2], m_vtxs[3], m_opt.data() );
+        for (const std::string& text : m_text) {
+          pt -> AddText( text.data() );
+        }
+        return pt;
+
+      }  // end 'MakeTPaveText()'
+ 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
       // ----------------------------------------------------------------------
       TextBox()  {};
       ~TextBox() {};
+
+      //! ctor accepting arguments
+      TextBox(
+        const TextList& text, 
+	const Vertices& vtxs,
+        const std::string& opt
+      ) {
+
+        m_text = text;
+        m_vtxs = vtxs;
+        m_opt  = opt;
+
+      }  // end ctor(TextList&, Vertices&, std::string&)'
 
   };  // end TextBox
 
