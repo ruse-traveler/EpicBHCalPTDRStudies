@@ -20,7 +20,7 @@
 // ----------------------------------------------------------------------------
 BHCalPlotter::BHCalPlotter() {
 
-  /* nothing to do */
+  //... nothing to do ...//
 
 }  // end ctor()
 
@@ -31,7 +31,7 @@ BHCalPlotter::BHCalPlotter() {
 // ----------------------------------------------------------------------------
 BHCalPlotter::~BHCalPlotter() {
 
-  /* nothing to do */
+  //... nothing to do ...//
 
 }  // end dtor()
 

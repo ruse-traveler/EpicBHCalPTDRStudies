@@ -13,7 +13,7 @@
 // root libraries
 /* TODO will go here */
 // analysis utilities
-#include "../../utility/PlotHelper.hxx"
+#include "../PlotHelper.hxx"
 
 
 
@@ -28,8 +28,8 @@ class BHCalPlotter {
   public:
 
     // default ctor/dtor
-    BHCalPlotter()  {};
-    ~BHCalPlotter() {};
+    BHCalPlotter();
+    ~BHCalPlotter();
 
     /* TODO fill in */
 
