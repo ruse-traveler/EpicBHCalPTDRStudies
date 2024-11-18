@@ -42,7 +42,7 @@ namespace PlotHelper {
   // ==========================================================================
   //! enum for different axes
   // ==========================================================================
-  enum class Axis {X, Y, Z};
+  enum Axis {X, Y, Z};
 
 
   // ==========================================================================
@@ -75,8 +75,8 @@ namespace PlotHelper {
         // ----------------------------------------------------------------------
         //! default ctor/dtor
         // ----------------------------------------------------------------------
-        PlotStyle()  {};
-        ~PlotStyle() {};
+        Plot()  {};
+        ~Plot() {};
 
         // ---------------------------------------------------------------------
         //! ctor accepting arguments
@@ -140,7 +140,7 @@ namespace PlotHelper {
       /*! A small struct to consolidate options
        *  for histogram, graph axis labels.
        */ 
-      Label {
+      struct Label {
 
         // members
         uint32_t color;
@@ -178,7 +178,7 @@ namespace PlotHelper {
        *  for options for histogram, graph, etc.
        *  titles. 
        */
-      Title {
+      struct Title {
 
         // members
         uint32_t color;
@@ -215,8 +215,8 @@ namespace PlotHelper {
     private:
 
       // general members
-      Plot  m_plot;
-      Text  m_text;
+      Plot m_plot;
+      Text m_text;
 
       // axis dependent members
       std::array<Label, 3> m_labels;
@@ -228,13 +228,13 @@ namespace PlotHelper {
       //! General getters
       // ----------------------------------------------------------------------
       Plot GetPlotStyle() const {return m_plot;}
-      Text GetTextStyle() const {return m_style;}
+      Text GetTextStyle() const {return m_text;}
 
       // ----------------------------------------------------------------------
       //! General setters
       // ----------------------------------------------------------------------
       void SetPlotStyle(const Plot& plot) {m_plot = plot;}
-      void SetTextStyle(const Text& text) {m_plot = text;}
+      void SetTextStyle(const Text& text) {m_text = text;}
 
       // ----------------------------------------------------------------------
       //! Axis dependent getters
@@ -273,7 +273,7 @@ namespace PlotHelper {
       // ----------------------------------------------------------------------
       void SetLabelStyle(const Label& label, const Axis& axis) {
 
-        m_labels[Axis::axis] = label;
+        m_labels[axis] = label;
         return;
 
       }  // end 'SetLabelStyle(Label&, Axis&)'
@@ -283,7 +283,7 @@ namespace PlotHelper {
       // ----------------------------------------------------------------------
       void SetTitleStyle(const Title& title, const Axis& axis) {
 
-        m_titles[Axis::axis] = title;
+        m_titles[axis] = title;
         return;
 
       }  // end 'SetTitleStyle(Title&, Axis&)'
