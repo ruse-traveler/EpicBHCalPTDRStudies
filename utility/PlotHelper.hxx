@@ -45,6 +45,7 @@ namespace PlotHelper {
   //! Convenient types
   // ==========================================================================
   typedef std::array<float, 4>     Vertices;
+  typedef std::array<float, 4>     Margins;
   typedef std::vector<TObject*>    Objects;
   typedef std::vector<std::string> TextList;
 
@@ -54,6 +55,11 @@ namespace PlotHelper {
   //! enum for different axes
   // ==========================================================================
   enum Axis {X, Y, Z};
+
+  // ==========================================================================
+  //! enum for different margins
+  // ==========================================================================
+  enum Margin {Top, Right, Bottom, Left};
 
 
 
@@ -700,7 +706,7 @@ namespace PlotHelper {
 	m_header  = hdr;
         m_entries = entries;
 
-      };
+      };  // end ctor(Vertices&, std::vector<Entry>&, std::string&)'
 
   };  // end Legend
 
@@ -714,13 +720,74 @@ namespace PlotHelper {
    */  
   class Pad {
 
+    public:
+
+      // TODO this might be better as a standalone stuct...
+      struct Options {
+
+        /* TODO fill in */
+
+        void Apply(TPad* pad) const {
+          /* TODO fill in */
+          return;
+        }  // end 'Apply(TPad*)'
+
+      };  // end Options
+
     private:
 
-      /* TODO fill in */
+      Options     m_opts;
+      Vertices    m_vtxs;
+      Margins     m_mgns;
+      std::string m_name;
+      std::string m_title = "";
 
     public:
 
-      /* TODO fill in */
+      // ----------------------------------------------------------------------
+      //! Getters
+      // ----------------------------------------------------------------------
+      Options     GetOptions()  const {return m_opts;}
+      Vertices    GetVertices() const {return m_vtxs;}
+      Margins     GetMargins()  const {return m_mgns;}
+      std::string GetName()     const {return m_name;}
+      std::string GetTitle()    const {return m_title;}
+
+      // ----------------------------------------------------------------------
+      //! Setters
+      // ----------------------------------------------------------------------
+      void SetOptions(const Options& opts)   {m_opts  = opts;}
+      void SetVertices(const Vertices& vtxs) {m_vtxs  = vtxs;}
+      void SetMargins(const Margins& mgns)   {m_mgns  = mgns;}
+      void SetName(const std::string& name)  {m_name  = name;}
+      void SetTitle(const std::string& ttl)  {m_title = ttl;}
+
+      // ----------------------------------------------------------------------
+      //! Create a TPad 
+      // ----------------------------------------------------------------------
+      TPad* MakePad() {
+
+        // create pad
+        TPad* pad = new TPad(
+          m_name.data(),
+          m_title.data(),
+          m_vtxs[0],
+          m_vtxs[1],
+          m_vtxs[2],
+          m_vtxs[3]
+        );
+
+        // set margins
+        pad -> SetTopMargin( m_mgns[Margin::Top] );
+        pad -> SetRightMargin( m_mgns[Margin::Right] );
+        pad -> SetBottomMargin( m_mgns[Margin::Bottom] );
+        pad -> SetLeftMargin( m_mgns[Margin::Left] );
+
+        // apply options and return pointer
+	m_opts.Apply(pad);
+        return pad;
+
+      }  // end 'MakePad()'
 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
@@ -728,6 +795,24 @@ namespace PlotHelper {
       Pad()  {};
       ~Pad() {};
 
+      // ----------------------------------------------------------------------
+      //! ctor accepting all members
+      // ----------------------------------------------------------------------
+      Pad(
+        const std::string& name,
+        const std::string& title,
+        const Vertices& vtxs,
+        const Margins& mgns,
+        const Options& opts
+      ) {
+
+        m_name  = name;
+        m_title = title;
+        m_vtxs  = vtxs;
+        m_mgns  = mgns;
+        m_opts  = opts;
+
+      }  // end ctor(std::string& x 2, Vertices&, Margins&, Options&)'
 
   };  // end Pad
 
