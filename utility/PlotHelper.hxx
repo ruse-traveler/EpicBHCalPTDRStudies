@@ -18,6 +18,7 @@
 #include <optional>
 #include <algorithm>
 // root libraries
+#include <TF1.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
@@ -44,10 +45,11 @@ namespace PlotHelper {
   // ==========================================================================
   //! Convenient types
   // ==========================================================================
-  typedef std::array<float, 4>     Vertices;
-  typedef std::array<float, 4>     Margins;
-  typedef std::vector<TObject*>    Objects;
-  typedef std::vector<std::string> TextList;
+  typedef std::array<float, 4>          Vertices;
+  typedef std::array<float, 4>          Margins;
+  typedef std::vector<TObject*>         Objects;
+  typedef std::vector<std::string>      TextList;
+  typedef std::pair<uint32_t, uint32_t> Dimensions;
 
 
 
@@ -801,6 +803,7 @@ namespace PlotHelper {
 
     private:
 
+      // members
       PadOpts     m_opts;
       Vertices    m_vtxs;
       Margins     m_mgns;
@@ -830,7 +833,7 @@ namespace PlotHelper {
       // ----------------------------------------------------------------------
       //! Create a TPad 
       // ----------------------------------------------------------------------
-      TPad* MakePad() {
+      TPad* MakeTPad() const {
 
         // create pad
         TPad* pad = new TPad(
@@ -852,7 +855,7 @@ namespace PlotHelper {
 	m_opts.Apply(pad);
         return pad;
 
-      }  // end 'MakePad()'
+      }  // end 'MakeTPad()'
 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
@@ -894,11 +897,74 @@ namespace PlotHelper {
     private:
 
       // members
+      PadOpts          m_opts;
+      Margins          m_mgns;
+      Dimensions       m_dims;
+      std::string      m_name;
+      std::string      m_title = "";
       std::vector<Pad> m_pads;
 
     public:
 
-      /* TODO fill in */
+      // ----------------------------------------------------------------------
+      //! Getters
+      // ----------------------------------------------------------------------
+      PadOpts          GetOptions()    const {return m_opts;}
+      Margins          GetMargins()    const {return m_mgns;}
+      Dimensions       GetDimensions() const {return m_dims;}
+      std::string      GetName()       const {return m_name;}
+      std::string      GetTitle()      const {return m_title;}
+      std::vector<Pad> GetPads()       const {return m_pads;}
+
+      // ----------------------------------------------------------------------
+      //! Setters
+      // ----------------------------------------------------------------------
+      void SetOptions(const PadOpts& opts)       {m_opts  = opts;}
+      void SetMargins(const Margins& mgns)       {m_mgns  = mgns;}
+      void SetDimensions(const Dimensions& dims) {m_dims  = dims;}
+      void SetName(const std::string& name)      {m_name  = name;}
+      void SetTitle(const std::string& ttl)      {m_title = ttl;}
+      void SetPads(const std::vector<Pad>& pads) {m_pads  = pads;}
+
+      // ----------------------------------------------------------------------
+      //! Create a TCanvas
+      // ----------------------------------------------------------------------
+      TCanvas* MakeTCanvas() const {
+
+        // create canvas
+        TCanvas* canvas = new TCanvas(
+          m_name.data(),
+          m_title.data(),
+          m_dims.first,
+          m_dims.second
+        );
+
+        // set margins if needed
+        if (m_pads.empty()) {
+          canvas -> SetTopMargin( m_mgns[Margin::Top] );
+          canvas -> SetRightMargin( m_mgns[Margin::Right] );
+          canvas -> SetBottomMargin( m_mgns[Margin::Bottom] );
+          canvas -> SetLeftMargin( m_mgns[Margin::Left] );
+        }
+
+        // apply options and return pointer
+	m_opts.Apply(canvas);
+        return canvas;
+
+      }  // end 'MakeTCanvas()'
+
+      // ----------------------------------------------------------------------
+      //! Create associated TPads
+      // ----------------------------------------------------------------------
+      std::vector<TPad*> MakeTPads() {
+
+        std::vector<TPad*> pads;
+        for (const auto& pad : m_pads) {
+          pads.push_back( pad.MakeTPad() ); 
+        }
+        return pads;
+
+      }  // end 'MakeTPads()'
 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
@@ -906,7 +972,45 @@ namespace PlotHelper {
       Canvas()  {};
       ~Canvas() {};
 
+      // ----------------------------------------------------------------------
+      //! ctor accepting all members
+      // ----------------------------------------------------------------------
+      Canvas(
+        const std::string& name,
+        const std::string& title,
+        const Dimensions& dims,
+        const PadOpts& opts,
+        std::optional<Margins> mgns = std::nullopt,
+        std::optional<std::vector<Pad>> pads = std::nullopt
+      ) {
+
+        // set necessary arguments
+        m_name  = name;
+        m_title = title;
+        m_dims  = dims;
+        m_opts  = opts;
+
+        // set optional arguments
+        if (mgns.has_value()) m_mgns = mgns.value();
+        if (pads.has_value()) m_pads = pads.value();
+
+      }  // end ctor(std::string& x 2, Dimensions&, PadOpts&, std::optional x 2)'
+
   };  // end Canvas
+
+
+
+/* TODO add pad manager class which just holds created
+   canvas/pad pointers
+  class PadManager {
+
+    private:
+
+      std::map<std::string, std::size_t> m_lbls;
+
+
+  };  // end PadManager
+*/
 
 }  // end PlotHelper namespace
 
