@@ -21,17 +21,21 @@
 #include <algorithm>
 // root libraries
 #include <TF1.h>
+#include <TF2.h>
+#include <TF3.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TH3.h>
 #include <TPad.h>
 #include <TLine.h>
 #include <TGraph.h>
+#include <TGraph2D.h>
 #include <TCanvas.h>
 #include <TLegend.h>
 #include <TObject.h>
 #include <TPaveText.h>
 #include <TGraphErrors.h>
+#include <TGraph2DErrors.h>
 #include <TGraphAsymmErrors.h>
 
 
@@ -95,8 +99,6 @@ namespace PlotHelper {
    *  histograms, graphs, etc.
    *
    *  TODO
-   *    - Add TGraph applicator
-   *    - Add TF1 applicator
    *    - Add fit function applicator
    *    - Create corresponding Style databse
    */
@@ -380,15 +382,56 @@ namespace PlotHelper {
       }  // end 'SetTitleStyles(std::vector<Title>&)'
 
       // ----------------------------------------------------------------------
+      //! Apply styles to a function
+      // ----------------------------------------------------------------------
+      /*! Note that this method is valid for a TF1, TF2, or TF3.
+       */ 
+      void ApplyStyle(TF1* func) const {
+
+        func -> SetFillColor( m_plot.color );
+        func -> SetFillStyle( m_plot.fill );
+        func -> SetLineColor( m_plot.color );
+        func -> SetLineStyle( m_plot.line );
+        func -> SetLineWidth( m_plot.width );
+        func -> SetMarkerColor( m_plot.color );
+        func -> SetMarkerStyle( m_plot.marker );
+        func -> GetXaxis() -> CenterTitle( m_titles[Axis::X].center );
+        func -> GetXaxis() -> SetTitleFont( m_titles[Axis::X].font );
+        func -> GetXaxis() -> SetTitleSize( m_titles[Axis::X].size );
+        func -> GetXaxis() -> SetTitleOffset( m_titles[Axis::X].offset );
+        func -> GetXaxis() -> SetLabelFont( m_labels[Axis::X].font );
+        func -> GetXaxis() -> SetLabelSize( m_labels[Axis::X].size );
+        func -> GetXaxis() -> SetLabelOffset( m_labels[Axis::X].offset );
+        func -> GetYaxis() -> CenterTitle( m_titles[Axis::Y].center );
+        func -> GetYaxis() -> SetTitleFont( m_titles[Axis::Y].font );
+        func -> GetYaxis() -> SetTitleSize( m_titles[Axis::Y].size );
+        func -> GetYaxis() -> SetTitleOffset( m_titles[Axis::Y].offset );
+        func -> GetYaxis() -> SetLabelFont( m_labels[Axis::Y].font );
+        func -> GetYaxis() -> SetLabelSize( m_labels[Axis::Y].size );
+        func -> GetYaxis() -> SetLabelOffset( m_labels[Axis::Y].offset );
+        func -> GetZaxis() -> CenterTitle( m_titles[Axis::Z].center );
+        func -> GetZaxis() -> SetTitleFont( m_titles[Axis::Z].font );
+        func -> GetZaxis() -> SetTitleSize( m_titles[Axis::Z].size );
+        func -> GetZaxis() -> SetTitleOffset( m_titles[Axis::Z].offset );
+        func -> GetZaxis() -> SetLabelFont( m_labels[Axis::Z].font );
+        func -> GetZaxis() -> SetLabelSize( m_labels[Axis::Z].size );
+        func -> GetZaxis() -> SetLabelOffset( m_labels[Axis::Z].offset );
+        return;
+
+      }  // end 'ApplyStyle(TFN*)'
+
+      // ----------------------------------------------------------------------
       //! Apply styles to a histogram
       // ----------------------------------------------------------------------
-      template <typename THN> void ApplyStyle(THN* hist) const {
+      /*! Note that this method is valid for a TH1, TH2, or TH3.
+       */ 
+      void ApplyStyle(TH1* hist) const {
 
         hist -> SetFillColor( m_plot.color );
         hist -> SetFillStyle( m_plot.fill );
         hist -> SetLineColor( m_plot.color );
         hist -> SetLineStyle( m_plot.line );
-        hist -> SetLineWdith( m_plot.width );
+        hist -> SetLineWidth( m_plot.width );
         hist -> SetMarkerColor( m_plot.color );
         hist -> SetMarkerStyle( m_plot.marker );
         hist -> SetTitleFont( m_text.font );
@@ -415,7 +458,69 @@ namespace PlotHelper {
         hist -> GetZaxis() -> SetLabelOffset( m_labels[Axis::Z].offset );
         return;
 
-      }  // end 'ApplyStyle(THN*)'
+      }  // end 'ApplyStyle(TH1*)'
+
+      // ----------------------------------------------------------------------
+      //! Apply styles to a 1D graph
+      // ----------------------------------------------------------------------
+      /*! Note that this method is valid for TGraph, TGraphErrors, and
+       *  TGraphAsymmErrors.
+       */ 
+      void ApplyStyle(TGraph* graph) const {
+
+        graph -> SetMarkerColor( m_plot.color );
+        graph -> SetMarkerStyle( m_plot.marker );
+        graph -> GetXaxis() -> CenterTitle( m_titles[Axis::X].center );
+        graph -> GetXaxis() -> SetTitleFont( m_titles[Axis::X].font );
+        graph -> GetXaxis() -> SetTitleSize( m_titles[Axis::X].size );
+        graph -> GetXaxis() -> SetTitleOffset( m_titles[Axis::X].offset );
+        graph -> GetXaxis() -> SetLabelFont( m_labels[Axis::X].font );
+        graph -> GetXaxis() -> SetLabelSize( m_labels[Axis::X].size );
+        graph -> GetXaxis() -> SetLabelOffset( m_labels[Axis::X].offset );
+        graph -> GetYaxis() -> CenterTitle( m_titles[Axis::Y].center );
+        graph -> GetYaxis() -> SetTitleFont( m_titles[Axis::Y].font );
+        graph -> GetYaxis() -> SetTitleSize( m_titles[Axis::Y].size );
+        graph -> GetYaxis() -> SetTitleOffset( m_titles[Axis::Y].offset );
+        graph -> GetYaxis() -> SetLabelFont( m_labels[Axis::Y].font );
+        graph -> GetYaxis() -> SetLabelSize( m_labels[Axis::Y].size );
+        graph -> GetYaxis() -> SetLabelOffset( m_labels[Axis::Y].offset );
+        return;
+
+      }  // end 'ApplyStyle(TGraph*)'
+
+      // ----------------------------------------------------------------------
+      //! Apply styles to a 2D graph
+      // ----------------------------------------------------------------------
+      /*! Note that this method is valid for TGraph2D and TGraph2DErrors.
+       */ 
+      void ApplyStyle(TGraph2D* graph) const {
+
+        graph -> SetMarkerColor( m_plot.color );
+        graph -> SetMarkerStyle( m_plot.marker );
+        graph -> GetXaxis() -> CenterTitle( m_titles[Axis::X].center );
+        graph -> GetXaxis() -> SetTitleFont( m_titles[Axis::X].font );
+        graph -> GetXaxis() -> SetTitleSize( m_titles[Axis::X].size );
+        graph -> GetXaxis() -> SetTitleOffset( m_titles[Axis::X].offset );
+        graph -> GetXaxis() -> SetLabelFont( m_labels[Axis::X].font );
+        graph -> GetXaxis() -> SetLabelSize( m_labels[Axis::X].size );
+        graph -> GetXaxis() -> SetLabelOffset( m_labels[Axis::X].offset );
+        graph -> GetYaxis() -> CenterTitle( m_titles[Axis::Y].center );
+        graph -> GetYaxis() -> SetTitleFont( m_titles[Axis::Y].font );
+        graph -> GetYaxis() -> SetTitleSize( m_titles[Axis::Y].size );
+        graph -> GetYaxis() -> SetTitleOffset( m_titles[Axis::Y].offset );
+        graph -> GetYaxis() -> SetLabelFont( m_labels[Axis::Y].font );
+        graph -> GetYaxis() -> SetLabelSize( m_labels[Axis::Y].size );
+        graph -> GetYaxis() -> SetLabelOffset( m_labels[Axis::Y].offset );
+        graph -> GetZaxis() -> CenterTitle( m_titles[Axis::Z].center );
+        graph -> GetZaxis() -> SetTitleFont( m_titles[Axis::Z].font );
+        graph -> GetZaxis() -> SetTitleSize( m_titles[Axis::Z].size );
+        graph -> GetZaxis() -> SetTitleOffset( m_titles[Axis::Z].offset );
+        graph -> GetZaxis() -> SetLabelFont( m_labels[Axis::Z].font );
+        graph -> GetZaxis() -> SetLabelSize( m_labels[Axis::Z].size );
+        graph -> GetZaxis() -> SetLabelOffset( m_labels[Axis::Z].offset );
+        return;
+
+      }  // end 'ApplyStyle(TGraph2D*)'
 
       // ----------------------------------------------------------------------
       //! Apply styles to text box
