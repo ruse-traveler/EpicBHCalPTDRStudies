@@ -26,6 +26,7 @@
 #include <TGraph.h>
 #include <TCanvas.h>
 #include <TLegend.h>
+#include <TObject.h>
 #include <TPaveText.h>
 #include <TGraphErrors.h>
 #include <TGraphAsymmErrors.h>
@@ -44,7 +45,9 @@ namespace PlotHelper {
   //! Convenient types
   // ==========================================================================
   typedef std::array<float, 4>     Vertices;
+  typedef std::vector<TObject*>    Objects;
   typedef std::vector<std::string> TextList;
+
 
 
   // ==========================================================================
@@ -412,6 +415,22 @@ namespace PlotHelper {
         return;
 
       }  // end 'ApplyStyle(TPaveText*)'
+
+      // ----------------------------------------------------------------------
+      //! Apply styles to a legend
+      // ----------------------------------------------------------------------
+      /*! n.b. this assumes the fill and border of the
+       *  TLegend will be the same color.
+       */
+      void ApplyStyle(TLegend* leg) const {
+
+        leg -> SetFillColor( m_plot.color );
+	leg -> SetFillStyle( m_plot.fill );
+	leg -> SetLineColor( m_plot.color );
+	leg -> SetLineStyle( m_plot.line );
+        return;
+
+      }  //  end 'ApplyStyle(TLegend*)'
       
       // ----------------------------------------------------------------------
       //! default ctor/dtor
@@ -505,7 +524,7 @@ namespace PlotHelper {
       // data members
       TextList    m_text;
       Vertices    m_vtxs;
-      std::string m_opt;
+      std::string m_opt = "NDC NB";
 
     public:
 
@@ -552,11 +571,13 @@ namespace PlotHelper {
       TextBox()  {};
       ~TextBox() {};
 
+      // ----------------------------------------------------------------------
       //! ctor accepting arguments
+      // ----------------------------------------------------------------------
       TextBox(
         const TextList& text, 
 	const Vertices& vtxs,
-        const std::string& opt
+        const std::string& opt = "NDC NB"
       ) {
 
         m_text = text;
@@ -569,6 +590,7 @@ namespace PlotHelper {
 
 
 
+
   // ==========================================================================
   //! Legend definition
   // ==========================================================================
@@ -577,19 +599,108 @@ namespace PlotHelper {
    */ 
   class Legend {
 
+    public:
+
+      // ======================================================================
+      //! Legend entry
+      // ======================================================================
+      /*! A small struct to consolidate the data for an individual
+       *  entry in a TLegend.
+       */
+      struct Entry {
+
+        // members
+        TObject*    object;
+        std::string label;
+        std::string option = "PF";
+
+        // --------------------------------------------------------------------	
+        // default ctor/dtor
+	// --------------------------------------------------------------------
+        Entry()  {};
+        ~Entry() {};
+
+	// --------------------------------------------------------------------
+        // ctor accepting arguments
+	// --------------------------------------------------------------------
+        Entry(
+          TObject* obj,
+          const std::string& lbl,
+	  const std::string& opt = "PF"
+        ) {
+          object = obj;
+          label  = lbl;
+          option = opt;
+        }  // end ctor (TOject*, std::string x 2)
+
+      };  // end Entry
+
     private:
 
-      /* TODO fill in */
+      // data members
+      Vertices           m_vtxs;
+      std::string        m_header = "";
+      std::vector<Entry> m_entries;
 
     public:
 
-      /* TODO fill in */
+      // ----------------------------------------------------------------------
+      //! Getters
+      // ----------------------------------------------------------------------
+      Vertices           GetVertices() const {return m_vtxs;}
+      std::string        GetHeader()   const {return m_header;}
+      std::vector<Entry> GetEntries()  const {return m_entries;}
+
+      // ----------------------------------------------------------------------
+      //! Setters
+      // ----------------------------------------------------------------------
+      void SetVertices(const Vertices& vtxs)             {m_vtxs    = vtxs;}
+      void SetHeader(const std::string& hdr)             {m_header  = hdr;}
+      void SetEntries(const std::vector<Entry>& entries) {m_entries = entries;}
+
+      // ----------------------------------------------------------------------
+      //! Add an entry
+      // ----------------------------------------------------------------------
+      void AddEntry(const Entry& entry) {
+
+        m_entries.emplace_back( entry );
+        return;
+
+      }  // end 'AddEntry(Entry&)'
+
+      // ----------------------------------------------------------------------
+      //! Create a TLegend
+      // ----------------------------------------------------------------------
+      TLegend* MakeLegend() {
+
+        TLegend* leg = new TLegend( m_vtxs[0], m_vtxs[1], m_vtxs[2], m_vtxs[3], m_header.data() );
+	for (const Entry& entry : m_entries) {
+          leg -> AddEntry( entry.object, entry.label.data(), entry.option.data() );
+        }
+        return leg;
+
+      }  // end 'MakeLegend()
 
       // ----------------------------------------------------------------------
       //! default ctor/dtor
       // ----------------------------------------------------------------------
       Legend()  {};
       ~Legend() {};
+
+      // ----------------------------------------------------------------------
+      //! ctor accepting arguments 
+      // ----------------------------------------------------------------------
+      Legend(
+        const Vertices& vtxs,
+        const std::vector<Entry>& entries,
+        const std::string& hdr = ""
+      ) {
+
+        m_vtxs    = vtxs;
+	m_header  = hdr;
+        m_entries = entries;
+
+      };
 
   };  // end Legend
 
