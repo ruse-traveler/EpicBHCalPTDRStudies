@@ -39,8 +39,7 @@ END {
   run_dir = "/sphenix/u/danderson/eic"
 
   # i/o parameters for condor running
-  #out_prefix = "testOutOnCondor"
-  out_prefix = "testOutOnLocal"
+  out_prefix = "testOutOnCondor"
   out_label  = "run0"
   out_index  = "file"
   out_suffix = ".d22m3y2024.edm4hep.root"
