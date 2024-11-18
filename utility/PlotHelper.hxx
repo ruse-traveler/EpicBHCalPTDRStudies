@@ -97,10 +97,6 @@ namespace PlotHelper {
    *  options that define the style (e.g. 
    *  marker color & style) of thigns like
    *  histograms, graphs, etc.
-   *
-   *  TODO
-   *    - Add fit function applicator
-   *    - Create corresponding Style databse
    */
   class Style { 
 
