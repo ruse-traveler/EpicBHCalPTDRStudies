@@ -61,22 +61,29 @@ BHCalPlotter::BHCalPlotter(
 // public methods =============================================================
 
 // ----------------------------------------------------------------------------
-//! Compare resolutions
+//! Compare resolutions or linearities
 // ----------------------------------------------------------------------------
-/*! Compares a variety of resolutions from different
+/*! Compares a variety of resolutions or linearities from different
  *  sources.
  *
- *  \param[in]  inputs list of objects to plot and their details
- *  \param[out] ofile  file to write to
+ *  \param[in]  inputs    list of objects to plot and their details
+ *  \param[in]  plotrange (x, y) ranges to plot
+ *  \param[in]  framedef  definition of the frame histogram used in plotting  
+ *  \param[out] ofile     file to write to
+ *
+ *  TODO should add an optional parameter to provide a function or TLine
+ *  to be plotted as well
  */
-void BHCalPlotter::DoResolutionComparison(
+void BHCalPlotter::DoResolutionLinearityComparison(
   const std::vector<PlotterInput>& inputs,
+  const PH::PlotRange& plotrange,
+  const HH::Definition& framedef,
   TFile* ofile
 ) {
 
   // announce start
   std::cout << "\n -------------------------------- \n"
-            << "  Beginning resolution comparison!\n"
+            << "  Beginning resolution/linearity comparison!\n"
             << "    Opening inputs:"
             << std::endl;
 
@@ -89,61 +96,76 @@ void BHCalPlotter::DoResolutionComparison(
       OpenFile(input.file, "read")
     );
     igraphs.push_back(
-      (TGraph*) GrabObject(input.object, ifiles.back())
+      (TGraph*) GrabObject( input.object, ifiles.back() )
     );
+    igraphs.back() -> SetName( input.rename.data() );
     std::cout << "      File  = " << input.file   << "\n"
               << "      Graph = " << input.object << "\n"
               << std::endl;
 
   }  // end input loop
 
-  // set styles
+  // legend dimensions
+  const float legheight = PH::GetHeight(
+    igraphs.size(),
+    m_baseTextStyle.GetTextStyle().spacing
+  );
+  const PH::Vertices vtxleg = {0.1, 0.1, 0.3, (float) 0.1 + legheight};
+
+  // define legend
+  PH::Legend legdef;
+  for (std::size_t igr = 0; igr < igraphs.size(); ++igr) {
+    legdef.AddEntry( PH::Legend::Entry(igraphs[igr], inputs[igr].legend, "p") );
+  }
+  legdef.SetVertices( vtxleg );
+
+  // create root objects
+  TH2*       frame  = framedef.MakeTH2();
+  TLegend*   legend = legdef.MakeLegend();
+  TPaveText* text   = m_textBox.MakeTPaveText();
+  std::cout << "    Created frame histogram, legend, and text box." << std::endl;
+
+  // set graph styles
   std::vector<PH::Style> styles = GenerateStyles( inputs );
   for (std::size_t igr = 0; igr < igraphs.size(); ++igr) {
     styles[igr].SetPlotStyle( inputs[igr].style );
     styles[igr].ApplyStyle( igraphs[igr] );
+    igraphs[igr] -> GetXaxis() -> SetRangeUser( plotrange.x.first, plotrange.x.second );
+    igraphs[igr] -> GetYaxis() -> SetRangeUser( plotrange.y.first, plotrange.y.second );
   }
-  std::cout << "    Set graph styles." << std::endl;
 
-  // legend dimensions
-  const float leg_height = PH::GetHeight(
-    igraphs.size(),
-    m_baseTextStyle.GetTextStyle().spacing
-  );
-  const PH::Vertices vtx_leg = {0.1, 0.1, 0.3, (float) 0.1 + leg_height};
-
-  // define legends
-  PH::Legend leg_def;
-  for (std::size_t igr = 0; igr < igraphs.size(); ++igr) {
-    leg_def.AddEntry( PH::Legend::Entry(igraphs[igr], inputs[igr].legend, "p") );
-  }
-  leg_def.SetVertices( vtx_leg );
-
-  /* TODO create frame histogram here */
-
-  // create root objects
-  TLegend*   legend = leg_def.MakeLegend();
-  TPaveText* text   = m_textBox.MakeTPaveText();
-  std::cout << "    Created legend and text box." << std::endl;
+  // set frame sytle
+  m_basePlotStyle.ApplyStyle( frame );
+  frame -> GetXaxis() -> SetRangeUser( plotrange.x.first, plotrange.x.second );
+  frame -> GetYaxis() -> SetRangeUser( plotrange.y.first, plotrange.y.second );
+  std::cout << "    Set graph and histogram styles." << std::endl;
 
   // define canvas
   PH::Canvas can_def = PH::Canvas("cResolution", "", {950, 950}, PH::PadOpts());
   can_def.SetMargins( {0.02, 0.02, 0.15, 0.15} );
 
-  // draw things
+  // draw plot
   PH::PlotManager manager = PH::PlotManager( can_def );
   manager.MakePlot();
   manager.Draw();
   manager.GetTCanvas() -> cd();
+  frame -> Draw();
   for (auto graph : igraphs) {
     graph -> Draw("LP");
   }
   legend -> Draw();
   text   -> Draw();
+  std:: cout << "    Made plot." << std::endl;
 
+  // save output
   ofile -> cd();
+  frame -> Write();
+  for (auto graph : igraphs) {
+    graph -> Write();
+  }
   manager.Write();
   manager.Close();
+  std::cout << "    Saved output." << std::endl;
 
   // close input files
   for (TFile* ifile : ifiles) {
@@ -153,7 +175,7 @@ void BHCalPlotter::DoResolutionComparison(
   std::cout << "    Closed input files." << std::endl;
 
   // announce end
-  std::cout << "  Finished resolution comparison!\n"
+  std::cout << "  Finished resolution/linearity comparison!\n"
             << " -------------------------------- \n"
             << endl;
 
@@ -228,18 +250,5 @@ Styles BHCalPlotter::GenerateStyles(const std::vector<PlotterInput>& inputs) {
   return styles;
 
 }  // end 'GenerateStyles(std::size_t)'
-
-
-
-// ----------------------------------------------------------------------------
-//! Make a 2D frame histogram
-// ----------------------------------------------------------------------------
-TH2* BHCalPlotter::MakeFrameHist() {
-
-  // TODO FILL IN
-  TH2* frame = nullptr; 
-  return frame;
-
-}  // end 'MakeFrameHist(...)'
 
 // end ========================================================================

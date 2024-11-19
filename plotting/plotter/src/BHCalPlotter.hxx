@@ -26,9 +26,11 @@
 #include <TGraphErrors.h>
 // analysis utilities
 #include "../PlotHelper.hxx"
+#include "../../utils/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;
+namespace HH = HistHelper;
 
 // useful alias
 typedef std::vector<PH::Style> Styles; 
@@ -45,6 +47,7 @@ struct PlotterInput {
 
   std::string     file;    // file where object is
   std::string     object;  // object to be plotted
+  std::string     rename;  // rename object to this
   std::string     legend;  // legend entry
   PH::Style::Plot style;   // marker, line, and fill style
 
@@ -80,7 +83,7 @@ class BHCalPlotter {
     void SetTextBox(const PH::TextBox& text)      {m_textBox       = text;}
 
     // plotting routines
-    void DoResolutionComparison(const std::vector<PlotterInput>& inputs, TFile* ofile);
+    void DoResolutionLinearityComparison(const std::vector<PlotterInput>& inputs, const PH::PlotRange& plotrange, const HH::Definition& framedef, TFile* ofile);
 
     // static methods
     static TFile*   OpenFile(const std::string& name, const std::string &option);
@@ -95,7 +98,6 @@ class BHCalPlotter {
 
     // helper methods
     Styles GenerateStyles(const std::vector<PlotterInput>& inputs);
-    TH2*   MakeFrameHist();
 
 };  // end BHCalPlotter
 
