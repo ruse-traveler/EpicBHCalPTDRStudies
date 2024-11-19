@@ -56,6 +56,7 @@ namespace PlotHelper {
   typedef std::vector<TObject*>              Objects;
   typedef std::vector<std::string>           TextList;
   typedef std::vector<std::string>           LabelList;
+  typedef std::pair<float, float>            Range;
   typedef std::pair<uint32_t, uint32_t>      Dimensions;
   typedef std::map<std::string, std::size_t> LabelToIndexMap;
 
@@ -92,6 +93,51 @@ namespace PlotHelper {
     return height;
 
   }  // end 'GetHeight(std::size_t float, std::optional<float>)'
+
+
+
+  // ==========================================================================
+  //! Plot range
+  // ==========================================================================
+  /*! This struct groups together the start/stop
+   *  points for all 3 axes for convenience.
+   */
+  struct PlotRange {
+
+    // members
+    Range x;
+    Range y;
+    Range z;
+
+    // ------------------------------------------------------------------------
+    //! default ctor/dtor
+    // ------------------------------------------------------------------------
+    PlotRange()  {};
+    ~PlotRange() {};
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting only x range
+    // ------------------------------------------------------------------------
+    PlotRange(const Range& xrange) {
+      x = xrange;
+    }
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting x, y, and possibly z range
+    // ------------------------------------------------------------------------
+    PlotRange(
+      const Range& xrange,
+      const Range& yrange,
+      std::optional<Range> zrange = std::nullopt
+    ) {
+      x = xrange;
+      y = yrange;
+      if (zrange.has_value()) {
+        z = zrange.value();
+      }
+    }
+
+  };  // end PlotRange
 
 
 
