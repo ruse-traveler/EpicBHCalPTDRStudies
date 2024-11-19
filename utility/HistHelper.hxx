@@ -22,6 +22,8 @@
 #include <TH3.h>
 #include <TGraph.h>
 #include <TGraphAsymmErrors.h>
+#include <ROOT/RDataFrame.hxx>
+#include <ROOT/RDF/HistoModels.hxx>
 
 
 
