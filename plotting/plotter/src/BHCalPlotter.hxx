@@ -19,13 +19,19 @@
 #include <optional>
 #include <iostream>
 // root libraries
+#include <TH2.h>
 #include <TFile.h>
+#include <TGraph.h>
 #include <TObject.h>
+#include <TGraphErrors.h>
 // analysis utilities
 #include "../PlotHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;
+
+// useful alias
+typedef std::vector<PH::Style> Styles; 
 
 
 
@@ -86,6 +92,10 @@ class BHCalPlotter {
     PH::Style   m_basePlotStyle;
     PH::Style   m_baseTextStyle;
     PH::TextBox m_textBox;
+
+    // helper methods
+    Styles GenerateStyles(const std::vector<PlotterInput>& inputs);
+    TH2*   MakeFrameHist();
 
 };  // end BHCalPlotter
 

@@ -27,6 +27,7 @@ R__LOAD_LIBRARY(./src/BHCalPlotter_cxx.so)
 namespace PH = PlotHelper;
 
 
+
 // ============================================================================
 //! Struct to consolidate user options
 // ============================================================================
@@ -49,6 +50,10 @@ void MakeBHCalClusterPlots(const Options& opt = DefaultOptions) {
 
   // options ------------------------------------------------------------------
 
+  /* TODO set base styles/text info here */
+
+  // open inputs --------------------------------------------------------------
+
   // open output file
   TFile* ofile = BHCalPlotter::OpenFile(opt.out_file, "recreate");
   std::cout << "    Opened output file" << std::endl;
@@ -58,6 +63,7 @@ void MakeBHCalClusterPlots(const Options& opt = DefaultOptions) {
   std::cout << "    Made plotter." << std::endl;
 
   // compare resolutions ------------------------------------------------------
+
   /* TODO might be good to move this to a header */
 
   const std::vector<std::string> in_files = {
