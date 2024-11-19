@@ -60,6 +60,7 @@ namespace PlotHelper {
   typedef std::map<std::string, std::size_t> LabelToIndexMap;
 
 
+
   // ==========================================================================
   //! enum for different axes
   // ==========================================================================
@@ -78,7 +79,11 @@ namespace PlotHelper {
   /*! Helper function to calculate how high a text box/legend
    *  should be based on line spacing and no. of lines.
    */
-  float GetHeight(const std::size_t nlines, const float spacing, std::optional<float> off) {
+  float GetHeight(
+    const std::size_t nlines,
+    const float spacing,
+    std::optional<float> off = std::nullopt
+  ) {
 
     float height = nlines * spacing;
     if (off.has_value()) {
@@ -1229,6 +1234,26 @@ namespace PlotHelper {
         return;
 
       }  // end 'Draw()'
+
+      // ----------------------------------------------------------------------
+      //! Write canvas
+      // ----------------------------------------------------------------------
+      void Write() {
+
+        m_canvas -> Write();
+        return;
+
+      }  // end 'Write()'
+
+      // ----------------------------------------------------------------------
+      //! Close canvas
+      // ----------------------------------------------------------------------
+      void Close() {
+
+        m_canvas -> Close();
+        return;
+
+      }  // end 'Close()'
 
       // ----------------------------------------------------------------------
       //! Get a specific pad via its label
