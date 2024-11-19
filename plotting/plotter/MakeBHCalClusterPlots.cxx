@@ -19,63 +19,56 @@
 // analysis utilities
 #include "./PlotHelper.hxx"
 #include "./src/BHCalPlotter.hxx"
+// plotting options
+#include "./BaseOptions.hxx"
+#include "./ResolutionLinearityComparison.hxx"
 
-// load libraries
+// load plotter library
 R__LOAD_LIBRARY(./src/BHCalPlotter_cxx.so)
 
 // abbreviate common namespaces
-namespace PH = PlotHelper;
-
-
-
-// ============================================================================
-//! Struct to consolidate user options
-// ============================================================================
-/* FIXME this is probably overkill for this particular macro */
-struct Options {
-  std::string out_file; // output file
-}  DefaultOptions = {
-  "test.root"
-};
+namespace PH  = PlotHelper;
+namespace BO  = BaseOptions;
+namespace RLC = ResolutionLinearityComparison;
 
 
 
 // ============================================================================
 //! Make uncalibrated and calibrated cluster plots
 // ============================================================================
-void MakeBHCalClusterPlots(const Options& opt = DefaultOptions) {
+void MakeBHCalClusterPlots( const std::string out_file = "test.root" ) {
 
   // announce start
   std::cout << "\n  Beginning BHCal plotting routines..." << std::endl;
 
-  // options ------------------------------------------------------------------
-
-  /* TODO set base styles/text info here */
-
-  // open inputs --------------------------------------------------------------
+  // open output & create plotter ---------------------------------------------
 
   // open output file
-  TFile* ofile = BHCalPlotter::OpenFile(opt.out_file, "recreate");
+  TFile* ofile = BHCalPlotter::OpenFile(out_file, "recreate");
   std::cout << "    Opened output file" << std::endl;
 
   // create plotter
-  BHCalPlotter* plotter = new BHCalPlotter();
+  BHCalPlotter* plotter = new BHCalPlotter(
+    BO::BasePlotStyle(),
+    BO::BaseTextStyle(),
+    BO::Text()
+  );
   std::cout << "    Made plotter." << std::endl;
 
-  // compare resolutions ------------------------------------------------------
+  // compare resolutions and linearity ----------------------------------------
 
-  /* TODO might be good to move this to a header */
-
-  const std::vector<std::string> in_files = {
-    "../input/forNewPlottingMacro_nonNonzeroEvts_andDefinitePrimary.evt5Ke210pim_central.d7m10y2024.root"
-  };
-
-  const std::vector<PlotterInput> reso_inputs = {
-    {in_files[0], "grUncalibResHist_eSumBHCal", "Sum of BHCal clusters", PH::Style::Plot(923, 20, 0)},
-    {in_files[0], "grCalibResHist_ePar_LD", "Calibrated energy [LD]", PH::Style::Plot(899, 25, 0)}
-  };
-
-  plotter -> DoResolutionComparison(reso_inputs, ofile);
+  plotter -> DoResolutionLinearityComparison(
+    RLC::ResoInputs(),
+    RLC::ResoPlotRange(),
+    RLC::ResoFrame(),
+    ofile
+  );
+  plotter -> DoResolutionLinearityComparison(
+    RLC::LineInputs(),
+    RLC::LinePlotRange(),
+    RLC::LineFrame(),
+    ofile
+  );
 
   // close files & exit -------------------------------------------------------
 
