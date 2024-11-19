@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 // analysis utilities
-#include "./PlotHelper.hxx"
+#include "../../utility/PlotHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;

@@ -433,7 +433,7 @@ namespace PlotHelper {
       // ----------------------------------------------------------------------
       /*! Note that this method is valid for a TF1, TF2, or TF3.
        */ 
-      void ApplyStyle(TF1* func) const {
+      void Apply(TF1* func) const {
 
         func -> SetFillColor( m_plot.color );
         func -> SetFillStyle( m_plot.fill );
@@ -465,14 +465,14 @@ namespace PlotHelper {
         func -> GetZaxis() -> SetLabelOffset( m_labels[Axis::Z].offset );
         return;
 
-      }  // end 'ApplyStyle(TFN*)'
+      }  // end 'Apply(TFN*)'
 
       // ----------------------------------------------------------------------
       //! Apply styles to a histogram
       // ----------------------------------------------------------------------
       /*! Note that this method is valid for a TH1, TH2, or TH3.
        */ 
-      void ApplyStyle(TH1* hist) const {
+      void Apply(TH1* hist) const {
 
         hist -> SetFillColor( m_plot.color );
         hist -> SetFillStyle( m_plot.fill );
@@ -505,7 +505,7 @@ namespace PlotHelper {
         hist -> GetZaxis() -> SetLabelOffset( m_labels[Axis::Z].offset );
         return;
 
-      }  // end 'ApplyStyle(TH1*)'
+      }  // end 'Apply(TH1*)'
 
       // ----------------------------------------------------------------------
       //! Apply styles to a 1D graph
@@ -513,8 +513,13 @@ namespace PlotHelper {
       /*! Note that this method is valid for TGraph, TGraphErrors, and
        *  TGraphAsymmErrors.
        */ 
-      void ApplyStyle(TGraph* graph) const {
+      void Apply(TGraph* graph) const {
 
+        graph -> SetFillColor( m_plot.color );
+        graph -> SetFillStyle( m_plot.fill );
+        graph -> SetLineColor( m_plot.color );
+        graph -> SetLineStyle( m_plot.line );
+        graph -> SetLineWidth( m_plot.width );
         graph -> SetMarkerColor( m_plot.color );
         graph -> SetMarkerStyle( m_plot.marker );
         graph -> GetXaxis() -> CenterTitle( m_titles[Axis::X].center );
@@ -533,15 +538,20 @@ namespace PlotHelper {
         graph -> GetYaxis() -> SetLabelOffset( m_labels[Axis::Y].offset );
         return;
 
-      }  // end 'ApplyStyle(TGraph*)'
+      }  // end 'Apply(TGraph*)'
 
       // ----------------------------------------------------------------------
       //! Apply styles to a 2D graph
       // ----------------------------------------------------------------------
       /*! Note that this method is valid for TGraph2D and TGraph2DErrors.
        */ 
-      void ApplyStyle(TGraph2D* graph) const {
+      void Apply(TGraph2D* graph) const {
 
+        graph -> SetFillColor( m_plot.color );
+        graph -> SetFillStyle( m_plot.fill );
+        graph -> SetLineColor( m_plot.color );
+        graph -> SetLineStyle( m_plot.line );
+        graph -> SetLineWidth( m_plot.width );
         graph -> SetMarkerColor( m_plot.color );
         graph -> SetMarkerStyle( m_plot.marker );
         graph -> GetXaxis() -> CenterTitle( m_titles[Axis::X].center );
@@ -567,7 +577,7 @@ namespace PlotHelper {
         graph -> GetZaxis() -> SetLabelOffset( m_labels[Axis::Z].offset );
         return;
 
-      }  // end 'ApplyStyle(TGraph2D*)'
+      }  // end 'Apply(TGraph2D*)'
 
       // ----------------------------------------------------------------------
       //! Apply styles to text box
@@ -575,15 +585,18 @@ namespace PlotHelper {
       /*! n.b. this assumes the fill and border of the
        *  TPave will be the same color.
        */
-      void ApplyStyle(TPaveText* text) const {
+      void Apply(TPaveText* text) const {
 
         text -> SetFillColor( m_plot.color );
 	text -> SetFillStyle( m_plot.fill );
 	text -> SetLineColor( m_plot.color );
 	text -> SetLineStyle( m_plot.line );
+        text -> SetTextColor( m_text.color );
+        text -> SetTextFont( m_text.font );
+        text -> SetTextAlign( m_text.align );
         return;
 
-      }  // end 'ApplyStyle(TPaveText*)'
+      }  // end 'Apply(TPaveText*)'
 
       // ----------------------------------------------------------------------
       //! Apply styles to a legend
@@ -591,15 +604,18 @@ namespace PlotHelper {
       /*! n.b. this assumes the fill and border of the
        *  TLegend will be the same color.
        */
-      void ApplyStyle(TLegend* leg) const {
+      void Apply(TLegend* leg) const {
 
         leg -> SetFillColor( m_plot.color );
 	leg -> SetFillStyle( m_plot.fill );
 	leg -> SetLineColor( m_plot.color );
 	leg -> SetLineStyle( m_plot.line );
+        leg -> SetTextColor( m_text.color );
+        leg -> SetTextFont( m_text.font );
+        leg -> SetTextAlign( m_text.align );
         return;
 
-      }  //  end 'ApplyStyle(TLegend*)'
+      }  //  end 'Apply(TLegend*)'
       
       // ----------------------------------------------------------------------
       //! default ctor/dtor

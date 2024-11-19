@@ -17,8 +17,8 @@
 #include <vector>
 #include <utility>
 // analysis utilities
-#include "./PlotHelper.hxx"
-#include "../utils/HistHelper.hxx"
+#include "../../utility/PlotHelper.hxx"
+#include "../../utility/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;
@@ -133,7 +133,7 @@ namespace ResolutionLinearityComparison {
   PH::PlotRange ResoPlotRange() {
 
     PH::PlotRange range = PH::PlotRange(
-      {0., 35.},
+      {0., 15.},
       {0., 1.2}
     );
     return range;
@@ -152,12 +152,40 @@ namespace ResolutionLinearityComparison {
   PH::PlotRange LinePlotRange() {
 
     PH::PlotRange range = PH::PlotRange(
-      {0., 35.},
-      {0., 25.}
+      {0., 15.},
+      {0., 15.}
     );
     return range;
 
   }  // end 'LinePlotRange()'
+
+
+
+  // ==========================================================================
+  //! Define resolution canvas
+  // ==========================================================================
+  PH::Canvas ResoCanvas() {
+
+    // define canvas (use default pad options)
+    PH::Canvas canvas = PH::Canvas("cResolution", "", {950, 950}, PH::PadOpts());
+    canvas.SetMargins( {0.02, 0.02, 0.15, 0.15} );
+    return canvas;
+
+  }  // end 'ResoCanvas()'
+
+
+
+  // ==========================================================================
+  //! Define linearity canvas
+  // ==========================================================================
+  PH::Canvas LineCanvas() {
+
+    // define canvas (use default pad options)
+    PH::Canvas canvas = PH::Canvas("cLinearity", "", {950, 950}, PH::PadOpts());
+    canvas.SetMargins( {0.02, 0.02, 0.15, 0.15} );
+    return canvas;
+
+  }  // end 'LineCanvas()'
 
 
 
@@ -172,11 +200,11 @@ namespace ResolutionLinearityComparison {
 
     // axis labels
     std::string xtitle = "E_{par} [GeV]";
-    std::string ytitle = "#sigma_{E}/#langleE_{reco}#rangle";
+    std::string ytitle = "#sigma_{E}/#LTE_{reco}#GT";
 
     // define frame
     HH::Definition frame = HH::Definition(
-      "hFrame",
+      "hResoFrame",
       "",
       {xtitle, ytitle},
       {xbins, ybins}
@@ -198,11 +226,11 @@ namespace ResolutionLinearityComparison {
 
     // axis labels
     std::string xtitle = "E_{par} [GeV]";
-    std::string ytitle = "#langleE_{reco}#rangle [GeV]";
+    std::string ytitle = "#LTE_{reco}#GT [GeV]";
 
     // define frame
     HH::Definition frame = HH::Definition(
-      "hFrame",
+      "hLineFrame",
       "",
       {xtitle, ytitle},
       {xbins, ybins}

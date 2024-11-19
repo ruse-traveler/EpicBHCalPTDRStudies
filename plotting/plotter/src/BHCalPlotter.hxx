@@ -25,8 +25,8 @@
 #include <TObject.h>
 #include <TGraphErrors.h>
 // analysis utilities
-#include "../PlotHelper.hxx"
-#include "../../utils/HistHelper.hxx"
+#include "../../../utility/PlotHelper.hxx"
+#include "../../../utility/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;
@@ -83,7 +83,7 @@ class BHCalPlotter {
     void SetTextBox(const PH::TextBox& text)      {m_textBox       = text;}
 
     // plotting routines
-    void DoResolutionLinearityComparison(const std::vector<PlotterInput>& inputs, const PH::PlotRange& plotrange, const HH::Definition& framedef, TFile* ofile);
+    void DoResolutionLinearityComparison(const std::vector<PlotterInput>& inputs, const PH::PlotRange& plotrange, const PH::Canvas& candef, const HH::Definition& framedef, TFile* ofile);
 
     // static methods
     static TFile*   OpenFile(const std::string& name, const std::string &option);

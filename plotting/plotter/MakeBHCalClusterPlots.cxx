@@ -17,8 +17,8 @@
 #include <TFile.h>
 #include <TSystem.h>
 // analysis utilities
-#include "./PlotHelper.hxx"
-#include "./src/BHCalPlotter.hxx"
+#include "../../utility/PlotHelper.hxx"
+#include "../../utility/src/BHCalPlotter.hxx"
 // plotting options
 #include "./BaseOptions.hxx"
 #include "./ResolutionLinearityComparison.hxx"
@@ -36,7 +36,7 @@ namespace RLC = ResolutionLinearityComparison;
 // ============================================================================
 //! Make uncalibrated and calibrated cluster plots
 // ============================================================================
-void MakeBHCalClusterPlots( const std::string out_file = "test.root" ) {
+void MakeBHCalClusterPlots( const std::string out_file = "test.plots.root" ) {
 
   // announce start
   std::cout << "\n  Beginning BHCal plotting routines..." << std::endl;
@@ -48,7 +48,7 @@ void MakeBHCalClusterPlots( const std::string out_file = "test.root" ) {
   std::cout << "    Opened output file" << std::endl;
 
   // create plotter
-  BHCalPlotter* plotter = new BHCalPlotter(
+  BHCalPlotter plotter = BHCalPlotter(
     BO::BasePlotStyle(),
     BO::BaseTextStyle(),
     BO::Text()
@@ -57,15 +57,17 @@ void MakeBHCalClusterPlots( const std::string out_file = "test.root" ) {
 
   // compare resolutions and linearity ----------------------------------------
 
-  plotter -> DoResolutionLinearityComparison(
+  plotter.DoResolutionLinearityComparison(
     RLC::ResoInputs(),
     RLC::ResoPlotRange(),
+    RLC::ResoCanvas(),
     RLC::ResoFrame(),
     ofile
   );
-  plotter -> DoResolutionLinearityComparison(
+  plotter.DoResolutionLinearityComparison(
     RLC::LineInputs(),
     RLC::LinePlotRange(),
+    RLC::LineCanvas(),
     RLC::LineFrame(),
     ofile
   );

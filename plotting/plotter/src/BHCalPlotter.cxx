@@ -68,6 +68,7 @@ BHCalPlotter::BHCalPlotter(
  *
  *  \param[in]  inputs    list of objects to plot and their details
  *  \param[in]  plotrange (x, y) ranges to plot
+ *  \param[in]  candef    definition of the canvas to draw on
  *  \param[in]  framedef  definition of the frame histogram used in plotting  
  *  \param[out] ofile     file to write to
  *
@@ -77,6 +78,7 @@ BHCalPlotter::BHCalPlotter(
 void BHCalPlotter::DoResolutionLinearityComparison(
   const std::vector<PlotterInput>& inputs,
   const PH::PlotRange& plotrange,
+  const PH::Canvas& candef,
   const HH::Definition& framedef,
   TFile* ofile
 ) {
@@ -99,8 +101,8 @@ void BHCalPlotter::DoResolutionLinearityComparison(
       (TGraph*) GrabObject( input.object, ifiles.back() )
     );
     igraphs.back() -> SetName( input.rename.data() );
-    std::cout << "      File  = " << input.file   << "\n"
-              << "      Graph = " << input.object << "\n"
+    std::cout << "      File  = " << input.file << "\n"
+              << "      Graph = " << input.object
               << std::endl;
 
   }  // end input loop
@@ -110,7 +112,7 @@ void BHCalPlotter::DoResolutionLinearityComparison(
     igraphs.size(),
     m_baseTextStyle.GetTextStyle().spacing
   );
-  const PH::Vertices vtxleg = {0.1, 0.1, 0.3, (float) 0.1 + legheight};
+  const PH::Vertices vtxleg = {0.3, 0.1, 0.5, (float) 0.1 + legheight};
 
   // define legend
   PH::Legend legdef;
@@ -129,23 +131,23 @@ void BHCalPlotter::DoResolutionLinearityComparison(
   std::vector<PH::Style> styles = GenerateStyles( inputs );
   for (std::size_t igr = 0; igr < igraphs.size(); ++igr) {
     styles[igr].SetPlotStyle( inputs[igr].style );
-    styles[igr].ApplyStyle( igraphs[igr] );
+    styles[igr].Apply( igraphs[igr] );
     igraphs[igr] -> GetXaxis() -> SetRangeUser( plotrange.x.first, plotrange.x.second );
     igraphs[igr] -> GetYaxis() -> SetRangeUser( plotrange.y.first, plotrange.y.second );
   }
 
   // set frame sytle
-  m_basePlotStyle.ApplyStyle( frame );
+  m_basePlotStyle.Apply( frame );
   frame -> GetXaxis() -> SetRangeUser( plotrange.x.first, plotrange.x.second );
   frame -> GetYaxis() -> SetRangeUser( plotrange.y.first, plotrange.y.second );
-  std::cout << "    Set graph and histogram styles." << std::endl;
 
-  // define canvas
-  PH::Canvas can_def = PH::Canvas("cResolution", "", {950, 950}, PH::PadOpts());
-  can_def.SetMargins( {0.02, 0.02, 0.15, 0.15} );
+  // set legend/text styles
+  m_baseTextStyle.Apply( legend );
+  m_baseTextStyle.Apply( text );
+  std::cout << "    Set styles." << std::endl;
 
   // draw plot
-  PH::PlotManager manager = PH::PlotManager( can_def );
+  PH::PlotManager manager = PH::PlotManager( candef );
   manager.MakePlot();
   manager.Draw();
   manager.GetTCanvas() -> cd();
@@ -182,7 +184,7 @@ void BHCalPlotter::DoResolutionLinearityComparison(
   // exit routine
   return;
 
-}  // end 'DoResolutionComparison()'
+}  // end 'DoResolutionLinearityComparison(std::vector<PlotterInput>&, PH::PlotRange&, PH::Canvas&, HH::Definition&, TFile*)'
 
 
 
