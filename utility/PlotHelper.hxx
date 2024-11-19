@@ -162,11 +162,11 @@ namespace PlotHelper {
       struct Plot {
 
         // members
-        uint32_t color;
-        uint32_t marker;
-        uint32_t fill;
-        uint32_t line;
-        uint32_t width;
+        uint32_t color  = 1;
+        uint32_t marker = 1;
+        uint32_t fill   = 0;
+        uint32_t line   = 1;
+        uint32_t width  = 1;
 
         // ----------------------------------------------------------------------
         //! default ctor/dtor
@@ -202,10 +202,10 @@ namespace PlotHelper {
       struct Text {
 
         // members
-        uint32_t color;
-        uint32_t font;
-        uint32_t align;
-        float    spacing;
+        uint32_t color   = 1;
+        uint32_t font    = 42;
+        uint32_t align   = 12;
+        float    spacing = 0.05;
 
         // ---------------------------------------------------------------------
         //! default ctor/dtor
@@ -219,7 +219,7 @@ namespace PlotHelper {
         Text(
           const uint32_t col_arg,
           const uint32_t fon_arg,
-          const uint32_t aln_arg,
+          const uint32_t aln_arg = 12,
           const float    spa_arg = 0.05
         ) {
           color   = col_arg;
@@ -239,10 +239,10 @@ namespace PlotHelper {
       struct Label {
 
         // members
-        uint32_t color;
-        uint32_t font;
-        float    size;
-        float    offset;
+        uint32_t color  = 1;
+        uint32_t font   = 42;
+        float    size   = 0.04;
+        float    offset = 0.005;
 
         // --------------------------------------------------------------------
         //! default ctor/dtor
@@ -277,11 +277,11 @@ namespace PlotHelper {
       struct Title {
 
         // members
-        uint32_t color;
-        uint32_t center;
-        uint32_t font;
-        float    size;
-        float    offset;
+        uint32_t color  = 1;
+        uint32_t center = 0;
+        uint32_t font   = 42;
+        float    size   = 0.04;
+        float    offset = 1.0;
 
         // --------------------------------------------------------------------
         //! defualt ctor/dtor
