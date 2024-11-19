@@ -17,11 +17,11 @@
 #include <TFile.h>
 #include <TSystem.h>
 // analysis utilities
-#include "../../utility/PlotHelper.hxx"
-#include "../../utility/src/BHCalPlotter.hxx"
+#include "../utility/PlotHelper.hxx"
+#include "src/BHCalPlotter.hxx"
 // plotting options
-#include "./BaseOptions.hxx"
-#include "./ResolutionLinearityComparison.hxx"
+#include "BaseOptions.hxx"
+#include "ResolutionLinearityComparison.hxx"
 
 // load plotter library
 R__LOAD_LIBRARY(./src/BHCalPlotter_cxx.so)

@@ -25,8 +25,8 @@
 #include <TObject.h>
 #include <TGraphErrors.h>
 // analysis utilities
-#include "../../../utility/PlotHelper.hxx"
-#include "../../../utility/HistHelper.hxx"
+#include "../../utility/PlotHelper.hxx"
+#include "../../utility/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;
