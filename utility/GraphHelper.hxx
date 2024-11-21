@@ -21,7 +21,9 @@
 #include <algorithm>
 // root libraries
 #include <TGraph.h>
+#include <TGraph2D.h>
 #include <TGraphErrors.h>
+#include <TGraph2DErrors.h>
 #include <TGraphAsymmErrors.h>
 
 
@@ -45,12 +47,16 @@ namespace GraphHelper {
     // members
     double x;
     double y;
+    double z;
     double ex;
     double ex_lo;
     double ex_hi;
     double ey;
     double ey_lo;
     double ey_hi;
+    double ez;
+    double ez_lo;
+    double ez_hi;
 
     // ------------------------------------------------------------------------
     //! default ctor/dtor
@@ -59,23 +65,47 @@ namespace GraphHelper {
     ~Point() {};
 
     // ------------------------------------------------------------------------
-    //! ctor without errors
+    //! ctor without errors (x, y)
     // ------------------------------------------------------------------------
     Point(const double x_arg, const double y_arg) {
 
       x     = x_arg;
       y     = y_arg;
+      z     = 0.;
       ex    = 0.;
       ex_lo = 0.;
       ex_hi = 0.;
       ey    = 0.;
       ey_lo = 0.;
       ey_hi = 0.;
+      ez    = 0.;
+      ez_lo = 0.;
+      ez_hi = 0.;
 
     }  // end ctor(double, double)
 
     // ------------------------------------------------------------------------
-    //! ctor accepting symmetric errors
+    //! ctor without errors (x, y, z)
+    // ------------------------------------------------------------------------
+    Point(const double x_arg, const double y_arg, const double z_arg) {
+
+      x     = x_arg;
+      y     = y_arg;
+      z     = z_arg;
+      ex    = 0.;
+      ex_lo = 0.;
+      ex_hi = 0.;
+      ey    = 0.;
+      ey_lo = 0.;
+      ey_hi = 0.;
+      ez    = 0.;
+      ez_lo = 0.;
+      ez_hi = 0.;
+
+    }  // end ctor(double, double, double)
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting symmetric errors (x, y)
     // ------------------------------------------------------------------------
     Point(
       const double x_arg,
@@ -86,17 +116,48 @@ namespace GraphHelper {
 
       x     = x_arg;
       y     = y_arg;
+      z     = 0.;
       ex    = ex_arg;
       ex_lo = ex_arg / 2.;
       ex_hi = ex_arg / 2.;
       ey    = ey_arg;
       ey_lo = ey_arg / 2.;
       ey_hi = ey_arg / 2.;
+      ez    = 0.;
+      ez_lo = 0.;
+      ez_hi = 0.;
 
     }  // end ctor(double, double, double, double)'
 
     // ------------------------------------------------------------------------
-    //! ctor accepting asymmetric errors
+    //! ctor accepting symmetric errors (x, y, z)
+    // ------------------------------------------------------------------------
+    Point(
+      const double x_arg,
+      const double y_arg,
+      const double z_arg,
+      const double ex_arg,
+      const double ey_arg,
+      const double ez_arg
+    ) {
+
+      x     = x_arg;
+      y     = y_arg;
+      z     = z_arg;
+      ex    = ex_arg;
+      ex_lo = ex_arg / 2.;
+      ex_hi = ex_arg / 2.;
+      ey    = ey_arg;
+      ey_lo = ey_arg / 2.;
+      ey_hi = ey_arg / 2.;
+      ez    = ez_arg;
+      ez_lo = ez_arg / 2.;
+      ez_hi = ez_arg / 2.;
+
+    }  // end ctor(double, double, double, double, double, double)'
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting asymmetric errors (x, y)
     // ------------------------------------------------------------------------
     Point(
       const double x_arg,
@@ -107,14 +168,45 @@ namespace GraphHelper {
 
       x     = x_arg;
       y     = y_arg;
+      z     = 0.;
       ex_lo = ex_arg.first;
       ex_hi = ex_arg.second;
       ex    = ex_arg.first + ex_arg.second;
       ey_lo = ey_arg.first;
       ey_hi = ey_arg.second;
       ey    = ey_arg.first + ey_arg.second;
+      ez    = 0.;
+      ez_lo = 0.;
+      ez_hi = 0.;
 
-    }  // end ctor(double, double, std::pair<double, double>, std::pair<double, double>)
+    }  // end ctor(double x 2, std::pair<double, double> x 2)
+
+    // ------------------------------------------------------------------------
+    //! ctor accepting asymmetric errors (x, y, z)
+    // ------------------------------------------------------------------------
+    Point(
+      const double x_arg,
+      const double y_arg,
+      const double z_arg,
+      const std::pair<double, double> ex_arg,
+      const std::pair<double, double> ey_arg,
+      const std::pair<double, double> ez_arg
+    ) {
+
+      x     = x_arg;
+      y     = y_arg;
+      z     = z_arg;
+      ex_lo = ex_arg.first;
+      ex_hi = ex_arg.second;
+      ex    = ex_arg.first + ex_arg.second;
+      ey_lo = ey_arg.first;
+      ey_hi = ey_arg.second;
+      ey    = ey_arg.first + ey_arg.second;
+      ez_lo = ez_arg.first;
+      ez_hi = ez_arg.second;
+      ez    = ez_arg.first + ez_arg.second;
+
+    }  // end ctor(double x 3, std::pair<double, double> x 3)
 
   };   // end Point 
 
