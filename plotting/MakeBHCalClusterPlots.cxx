@@ -17,11 +17,12 @@
 #include <TFile.h>
 #include <TSystem.h>
 // analysis utilities
-#include "../utility/PlotHelper.hxx"
-#include "src/BHCalPlotter.hxx"
+#include "./PlotHelper.hxx"
+#include "./src/BHCalPlotter.hxx"
 // plotting options
-#include "BaseOptions.hxx"
-#include "ResolutionLinearityComparison.hxx"
+#include "./BaseOptions.hxx"
+#include "./EnergySpectra.hxx"
+#include "./ResolutionLinearityComparison.hxx"
 
 // load plotter library
 R__LOAD_LIBRARY(./src/BHCalPlotter_cxx.so)
@@ -29,6 +30,7 @@ R__LOAD_LIBRARY(./src/BHCalPlotter_cxx.so)
 // abbreviate common namespaces
 namespace PH  = PlotHelper;
 namespace BO  = BaseOptions;
+namespace ES  = EnergySpectra;
 namespace RLC = ResolutionLinearityComparison;
 
 
@@ -54,6 +56,15 @@ void MakeBHCalClusterPlots( const std::string out_file = "test.plots.root" ) {
     BO::Text()
   );
   std::cout << "    Made plotter." << std::endl;
+
+  // make energy spectra ------------------------------------------------------
+
+  plotter.DoEnergySpectra(
+    ES::Inputs(),
+    ES::PlotRange(),
+    ES::Canvas(),
+    ofile
+  );
 
   // compare resolutions and linearity ----------------------------------------
 
