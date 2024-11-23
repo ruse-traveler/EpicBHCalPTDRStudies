@@ -19,6 +19,7 @@
 #include <optional>
 #include <iostream>
 // root libraries
+#include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
 #include <TGraph.h>
@@ -83,7 +84,20 @@ class BHCalPlotter {
     void SetTextBox(const PH::TextBox& text)      {m_textBox       = text;}
 
     // plotting routines
-    void DoResolutionLinearityComparison(const std::vector<PlotterInput>& inputs, const PH::PlotRange& plotrange, const PH::Canvas& candef, const HH::Definition& framedef, TFile* ofile);
+    void DoEnergySpectra(
+      const std::vector<PlotterInput>& inputs,
+      const PH::PlotRange& plotrange,
+      const PH::Canvas& candef,
+      TFile* ofile,
+      std::optional<std::string> header = std::nullopt
+    );
+    void DoResolutionLinearityComparison(
+      const std::vector<PlotterInput>& inputs,
+      const PH::PlotRange& plotrange,
+      const PH::Canvas& candef,
+      const HH::Definition& framedef,
+      TFile* ofile
+    );
 
     // static methods
     static TFile*   OpenFile(const std::string& name, const std::string &option);

@@ -17,8 +17,8 @@
 #include <vector>
 #include <utility>
 // analysis utilities
-#include "../utility/PlotHelper.hxx"
-#include "../utility/HistHelper.hxx"
+#include "./PlotHelper.hxx"
+#include "../utils/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;
@@ -30,8 +30,7 @@ namespace HH = HistHelper;
 //! Resolution/Linearity Comparison Options
 // ============================================================================
 /*! This namespace collects all the parameters associated with
- *  the `BHCalPlotter::ResolutionComparison` and `BHCalPlotter::
- *  LinearityComparison` routines.
+ *  the `BHCalPlotter::DoResolutionLinearityComparison` routines.
  */
 namespace ResolutionLinearityComparison {
 

@@ -61,6 +61,130 @@ BHCalPlotter::BHCalPlotter(
 // public methods =============================================================
 
 // ----------------------------------------------------------------------------
+//! Plot energy spectra
+// ----------------------------------------------------------------------------
+/*! Compares a variety of energy spectra from different sources.
+ *
+ *  \param[in]  inputs    list of objects to plot and their details
+ *  \param[in]  plotrange (x, y) ranges to plot
+ *  \param[in]  candef    definition of the canvas to draw on
+ *  \param[out] ofile     file to write to
+ *  \param[in]  header    optionally, can provide header for legend
+ */
+void BHCalPlotter::DoEnergySpectra(
+  const std::vector<PlotterInput>& inputs,
+  const PH::PlotRange& plotrange,
+  const PH::Canvas& candef,
+  TFile* ofile,
+  std::optional<std::string> header
+) {
+
+  // announce start
+  std::cout << "\n -------------------------------- \n"
+            << "  Beginning energy spectra plotting!\n"
+            << "    Opening inputs:"
+            << std::endl;
+
+  // open inputs
+  std::vector<TFile*> ifiles;
+  std::vector<TH1*>   ihists;
+  for (const PlotterInput& input : inputs) {
+
+    ifiles.push_back(
+      OpenFile(input.file, "read")
+    );
+    ihists.push_back(
+      (TH1*) GrabObject( input.object, ifiles.back() )
+    );
+    ihists.back() -> SetName( input.rename.data() );
+    std::cout << "      File = " << input.file << "\n"
+              << "      Hist = " << input.object
+              << std::endl;
+
+  }  // end input loop
+
+  // legend dimensions
+  const std::size_t  nlines    = header.has_value() ? ihists.size() + 1 : ihists.size();
+  const float        spacing   = m_baseTextStyle.GetTextStyle().spacing;
+  const float        legheight = PH::GetHeight(nlines, spacing);
+  const PH::Vertices vtxleg    = {0.3, 0.1, 0.5, (float) 0.1 + legheight};
+
+  // define legend
+  PH::Legend legdef;
+  for (std::size_t ihst = 0; ihst < ihists.size(); ++ihst) {
+    legdef.AddEntry( PH::Legend::Entry(ihists[ihst], inputs[ihst].legend, "PF") );
+  }
+  legdef.SetVertices( vtxleg );
+  if (header.has_value()) {
+    legdef.SetHeader( header.value() );
+  }
+
+  // create root objects
+  TLegend*   legend = legdef.MakeLegend();
+  TPaveText* text   = m_textBox.MakeTPaveText();
+  std::cout << "    Created legend and text box." << std::endl;
+
+  // set hist styles
+  std::vector<PH::Style> styles = GenerateStyles( inputs );
+  for (std::size_t ihst = 0; ihst < ihists.size(); ++ihst) {
+    styles[ihst].SetPlotStyle( inputs[ihst].style );
+    styles[ihst].Apply( ihists[ihst] );
+    ihists[ihst] -> GetXaxis() -> SetRangeUser( plotrange.x.first, plotrange.x.second );
+    ihists[ihst] -> GetYaxis() -> SetRangeUser( plotrange.y.first, plotrange.y.second );
+
+    // apply styles to fit functions
+    for (auto function : *ihists[ihst] -> GetListOfFunctions()) {
+      styles[ihst].Apply( (TF1*) function );
+    }
+  }
+
+  // set legend/text styles
+  m_baseTextStyle.Apply( legend );
+  m_baseTextStyle.Apply( text );
+  std::cout << "    Set styles." << std::endl;
+
+  // draw plot
+  PH::PlotManager manager = PH::PlotManager( candef );
+  manager.MakePlot();
+  manager.Draw();
+  manager.GetTCanvas() -> cd();
+  ihists[0] -> Draw();
+  for (std::size_t ihst = 1; ihst < ihists.size(); ++ihst) {
+    ihists[ihst] -> Draw("same");
+  }
+  legend -> Draw();
+  text   -> Draw();
+  std:: cout << "    Made plot." << std::endl;
+
+  // save output
+  ofile -> cd();
+  for (auto hist : ihists) {
+    hist -> Write();
+  }
+  manager.Write();
+  manager.Close();
+  std::cout << "    Saved output." << std::endl;
+
+  // close input files
+  for (TFile* ifile : ifiles) {
+    ifile -> cd();
+    ifile -> Close();
+  }
+  std::cout << "    Closed input files." << std::endl;
+
+  // announce end
+  std::cout << "  Finished energy spectra plotting!\n"
+            << " -------------------------------- \n"
+            << endl;
+
+  // exit routine
+  return;
+
+}  // end 'DoEnergySpectra('std::vector<PlotterInput>&, PHP::PlotRange&, PH::Canvs&, TFile, std::optional<std::string>)'
+
+
+
+// ----------------------------------------------------------------------------
 //! Compare resolutions or linearities
 // ----------------------------------------------------------------------------
 /*! Compares a variety of resolutions or linearities from different
@@ -72,8 +196,10 @@ BHCalPlotter::BHCalPlotter(
  *  \param[in]  framedef  definition of the frame histogram used in plotting  
  *  \param[out] ofile     file to write to
  *
- *  TODO should add an optional parameter to provide a function or TLine
- *  to be plotted as well
+ *  TODO it might be handy to provide some way to add a function or
+ *  TLine to plot alongside the resolution/linearities...
+ *    - Maybe an additional interface that has a TObject* instead
+ *      of 2 std::string's? 
  */
 void BHCalPlotter::DoResolutionLinearityComparison(
   const std::vector<PlotterInput>& inputs,
