@@ -196,8 +196,10 @@ void BHCalPlotter::DoEnergySpectra(
  *  \param[in]  framedef  definition of the frame histogram used in plotting  
  *  \param[out] ofile     file to write to
  *
- *  TODO should add an optional parameter to provide a function or TLine
- *  to be plotted as well
+ *  TODO it might be handy to provide some way to add a function or
+ *  TLine to plot alongside the resolution/linearities...
+ *    - Maybe an additional interface that has a TObject* instead
+ *      of 2 std::string's? 
  */
 void BHCalPlotter::DoResolutionLinearityComparison(
   const std::vector<PlotterInput>& inputs,

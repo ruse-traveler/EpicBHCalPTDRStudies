@@ -17,7 +17,7 @@
 #include <TFile.h>
 #include <TSystem.h>
 // analysis utilities
-#include "./PlotHelper.hxx"
+#include "../utility/PlotHelper.hxx"
 #include "./src/BHCalPlotter.hxx"
 // plotting options
 #include "./BaseOptions.hxx"
