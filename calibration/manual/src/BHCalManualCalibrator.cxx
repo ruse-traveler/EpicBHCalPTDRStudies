@@ -94,6 +94,10 @@ void BHCalManualCalibrator::DoMuSigmaMinimization() {
   for (std::size_t iRel = 0; iRel < m_cfg.relValues.size(); ++iRel) {
     for (std::size_t iPar = 0; iPar < m_cfg.ePar.size(); ++iPar) {
 
+      // TODO calculate relevant hist index based on
+      // particle energy and parameter combo
+      const std::size_t iHist = GetHistIndex();
+
       const double par = m_cfg.ePar[iPar];
       const double rel = m_cfg.relValues[iRel];
       const double res = GetSigmaOverMu(rel, iHist, iPar);
@@ -144,7 +148,7 @@ double BHCalManualCalibrator::GetSigmaOverMu(
 ) {
 
   // grab particle bin
-  const auto eParbin = m_cfg.eParBins.at(iParBin);
+  const auto eParBin = m_cfg.eParBins.at(iParBin);
 
   // open dataframe
   ROOT::RDataFrame frame(m_cfg.intuple, m_cfg.infile);
@@ -153,25 +157,26 @@ double BHCalManualCalibrator::GetSigmaOverMu(
   auto entries = frame.Count();
   if (entries == 0) {
     std::cerr << "Error: No entries found!" << std::endl;
-    assert(entries > 0);
+    assert(entries.GetValue() > 0);
   }
 
   // lambda to calculate weight energy sum
   auto doScaledEneSum = [&rel](const double eEM, const double eHad) {
     return eEM + (rel * eHad);
-  }
+  };
 
   // lambda to check if in particle energy bin
   auto isInParEneBin = [&eParBin](const double ePar) {
     return ((ePar >= eParBin.first) && (ePar < eParBin.second));
-  }
+  };
 
+  // run analysis
   auto hSum = frame.Define( "eScaledSum", doScaledEneSum, {m_cfg.eEMLeaf, m_cfg.eHadLeaf} )
-                   .Filter( eParCut, {m_cfg.eParLeaf} )
+                   .Filter( isInParEneBin, {m_cfg.eParLeaf} )
                    .Histo1D( m_histDefs[iHist].MakeTH1Model(), "eScaledSum" );
 
   // get histogram min/max
-  const uint32_t nbins = hSum -> GetNbinsx();
+  const uint32_t nbins = hSum -> GetNbinsX();
   const double   min   = hSum -> GetXaxis() -> GetBinLowEdge(1);
   const double   max   = hSum -> GetYaxis() -> GetBinLowEdge(nbins);
 
@@ -194,8 +199,8 @@ double BHCalManualCalibrator::GetSigmaOverMu(
   const double res = sig / mu;
 
   // store outputs and return
-  m_hists.push_back( hSum );
-  m_funcs.push_back( fit );
+  m_hists.emplace_back( hSum.GetPtr() );
+  m_funcs.emplace_back( fit );
   return res;
 
 }  // end 'GetSigmaOverMu(double, std::size_t, std::size_t)'
@@ -208,28 +213,8 @@ double BHCalManualCalibrator::GetSigmaOverMu(
 std::size_t GetHistIndex() {
 
   /* TODO fill in */
-  return;
+  return 0;
 
 }  // end 'GetHistIndex()'
-
-
-
-// ----------------------------------------------------------------------------
-//! Get string expression to check if particle energy is in a bin
-// ---------------------------------------------------------------------------- 
-/*! FIXME might not be needed */
-std::string BHCalManualCalibrator::GetParCutString(const std::size_t iParBin) {
-
-  // convert doubles to string
-  const std::string sPar = m_cfg.eParLeaf;
-  const std::string sMin = std::to_string( m_cfg.eParBins.at(iParBin).first );
-  const std::string sMax = std::to_string( m_cfg.eParBins.at(iParBin).second );
-
-  // construct string
-  std::string cut = "((" + sPar + " >= " + sMin ") && (" + sPar + " < " + sMax + "));";
-  return cut;
-
-}  // end 'GetParCutString(std::size_t)'
-
 
 // end ========================================================================

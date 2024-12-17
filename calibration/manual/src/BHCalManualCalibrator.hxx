@@ -37,6 +37,11 @@
 namespace HH = HistHelper;
 namespace GH = GraphHelper;
 
+// handy aliases
+typedef std::vector<double> ParVec;
+typedef std::vector<double> EneVec;
+typedef std::vector<std::pair<double, double>> BinVec;
+
 
 
 // ============================================================================
@@ -51,14 +56,14 @@ struct BHCalManualCalibratorConfig {
   // tuple parameters
   std::string eParLeaf = "ePar";
   std::string eEMLeaf  = "eSumBEMC";
-  std::String eHadLeaf = "eSumBHCal";
+  std::string eHadLeaf = "eSumBHCal";
 
   // cut parameters
-  std::vector<double>       ePar     = {1.};
-  std::pair<double, double> eParBins = {0., 100.};
+  EneVec ePar     = {1.};
+  BinVec eParBins = { {0., 100.} };
 
   // mu/sigma parameters
-  std::vector<double> relValues = {1.0};
+  ParVec relValues = {1.0};
 
 };  // end BHCalManualCalibratorConfig
 
@@ -97,7 +102,6 @@ class BHCalManualCalibrator {
     // private methods
     double      GetSigmaOverMu(const double rel, const std::size_t iHist, const std::size_t iParBin);
     std::size_t GetHistIndex();  // TODO
-    std::string GetParCutString(const std::size_t iParBin); 
 
     // hist/graph definitions
     std::vector<HH::Definition> m_histDefs;
