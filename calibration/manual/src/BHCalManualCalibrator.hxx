@@ -12,6 +12,7 @@
 #define BHCalManualCalibrator_hxx
 
 // c++ utilities
+#include <map>
 #include <string>
 #include <vector>
 #include <cassert>
@@ -38,9 +39,14 @@ namespace HH = HistHelper;
 namespace GH = GraphHelper;
 
 // handy aliases
+typedef std::tuple<int, int64_t, int64_t, int64_t> HistIndex;
+typedef std::pair<double, double> Bin;
 typedef std::vector<double> ParVec;
 typedef std::vector<double> EneVec;
-typedef std::vector<std::pair<double, double>> BinVec;
+typedef std::vector<Bin> BinVec;
+typedef std::map<HistIndex, std::size_t> IndexMap;
+typedef std::map<std::string, std::vector<HH::Definition>> HistDefs;
+typedef std::map<std::string, std::vector<GH::Definition>> GraphDefs;
 
 
 
@@ -62,8 +68,9 @@ struct BHCalManualCalibratorConfig {
   EneVec ePar     = {1.};
   BinVec eParBins = { {0., 100.} };
 
-  // mu/sigma parameters
-  ParVec relValues = {1.0};
+  // calculation parameters
+  ParVec relValues  = {1.0};
+  ParVec normValues = {1.0};
 
 };  // end BHCalManualCalibratorConfig
 
@@ -83,7 +90,6 @@ class BHCalManualCalibrator {
     // enumeration of methods
     enum Method {Chi2, MuSigma};
 
-
     // default ctor/dtor
     BHCalManualCalibrator();
     ~BHCalManualCalibrator();
@@ -100,12 +106,17 @@ class BHCalManualCalibrator {
   private:
 
     // private methods
-    double      GetSigmaOverMu(const double rel, const std::size_t iHist, const std::size_t iParBin);
-    std::size_t GetHistIndex();  // TODO
+    double GetSigmaOverMu(const double rel, const std::size_t iHist, const std::size_t iParBin);
+    void   BuildHists();  // TODO
+    void   BuildGraphs();  // TODO
+    void   BuildIndices();
+
+    // map of hist index to vector index
+    IndexMap m_histIdxs;
 
     // hist/graph definitions
-    std::vector<HH::Definition> m_histDefs;
-    std::vector<GH::Definition> m_graphDefs;
+    HistDefs  m_histDefs;
+    GraphDefs m_graphDefs;
 
     // outputs
     std::vector<TH1*>      m_hists;

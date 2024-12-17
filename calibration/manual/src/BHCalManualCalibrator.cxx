@@ -57,8 +57,10 @@ BHCalManualCalibrator::BHCalManualCalibrator(const BHCalManualCalibratorConfig& 
 // ----------------------------------------------------------------------------
 void BHCalManualCalibrator::Init() {
 
-   /* TODO definition generation goes here */
-   return;
+  BuildIndices();
+  BuildGraphs();
+  BuildHists();
+  return;
 
 }  // end 'Init()'
 
@@ -84,20 +86,21 @@ void BHCalManualCalibrator::DoMuSigmaMinimization() {
   /* TODO
    *  - add 1/mu calc
    *  - load values into graphs
-   *      (rel, res)
-   *      (epar, rel, res)
-   *      (epar, reso)
-   *      (epar, ecalib)
+   *      {rel, res}
+   *      {epar, rel, res}
+   *      {epar, reso}
+   *      {epar, ecalib}
    *  - identify minima in res
    */
 
   for (std::size_t iRel = 0; iRel < m_cfg.relValues.size(); ++iRel) {
     for (std::size_t iPar = 0; iPar < m_cfg.ePar.size(); ++iPar) {
 
-      // TODO calculate relevant hist index based on
-      // particle energy and parameter combo
-      const std::size_t iHist = GetHistIndex();
+      // grab relevant histogram index
+      const HistIndex   iMap  = std::make_tuple( Method::MuSigma, iPar, iRel, 0 );
+      const std::size_t iHist = m_histIdxs[ iMap ];
 
+      // run calcuulation
       const double par = m_cfg.ePar[iPar];
       const double rel = m_cfg.relValues[iRel];
       const double res = GetSigmaOverMu(rel, iHist, iPar);
@@ -141,6 +144,7 @@ void BHCalManualCalibrator::End(TFile* outfile) {
 // ----------------------------------------------------------------------------
 //! Calculate sigma over mu for given scale factor + particle bin
 // ----------------------------------------------------------------------------
+/* FIXME this might need to be avoid function */
 double BHCalManualCalibrator::GetSigmaOverMu(
   const double rel,
   const std::size_t iHist,
@@ -160,7 +164,12 @@ double BHCalManualCalibrator::GetSigmaOverMu(
     assert(entries.GetValue() > 0);
   }
 
-  // lambda to calculate weight energy sum
+  // lambda to calculate raw energy sum
+  auto doRawEneSum = [](const double eEM, const double eHad) {
+    return eEM + eHad;
+  };
+
+  // lambda to calculate weightd energy sum
   auto doScaledEneSum = [&rel](const double eEM, const double eHad) {
     return eEM + (rel * eHad);
   };
@@ -171,35 +180,42 @@ double BHCalManualCalibrator::GetSigmaOverMu(
   };
 
   // run analysis
-  auto hSum = frame.Define( "eScaledSum", doScaledEneSum, {m_cfg.eEMLeaf, m_cfg.eHadLeaf} )
-                   .Filter( isInParEneBin, {m_cfg.eParLeaf} )
-                   .Histo1D( m_histDefs[iHist].MakeTH1Model(), "eScaledSum" );
+  auto analysis = frame.Define( "eRawSum", doRawEneSum, {m_cfg.eEMLeaf, m_cfg.eHadLeaf} )
+                       .Define( "eScaledSum", doScaledEneSum, {m_cfg.eEMLeaf, m_cfg.eHadLeaf} )
+                       .Filter( isInParEneBin, {m_cfg.eParLeaf} );
+
+  // get histograms
+  auto hRawSum   = analysis.Histo1D( m_histDefs["RawSum"][iHist].MakeTH1Model(), "eRawSum" );
+  auto hScaleSum = analysis.Histo1D( m_histDefs["ScaleSum"][iHist].MakeTH1Model(), "eScaledSum" );
 
   // get histogram min/max
-  const uint32_t nbins = hSum -> GetNbinsX();
-  const double   min   = hSum -> GetXaxis() -> GetBinLowEdge(1);
-  const double   max   = hSum -> GetYaxis() -> GetBinLowEdge(nbins);
+  const uint32_t nbins = hScaleSum -> GetNbinsX();
+  const double   min   = hScaleSum -> GetXaxis() -> GetBinLowEdge(1);
+  const double   max   = hScaleSum -> GetYaxis() -> GetBinLowEdge(nbins);
 
   // make fit name
-  std::string fName = m_histDefs[iHist].GetName();
+  std::string fName = m_histDefs["ScaleSum"][iHist].GetName();
   fName.replace(0, 1, "f");
 
   // create gaussian for fit
   TF1* fit = new TF1(fName.data(), "gaus(0)", min, max);
-  fit -> SetParameter( 0, hSum -> Integral() );
-  fit -> SetParameter( 1, hSum -> GetMean() );
-  fit -> SetParameter( 2, hSum -> GetRMS() );
+  fit -> SetParameter( 0, hScaleSum -> Integral() );
+  fit -> SetParameter( 1, hScaleSum -> GetMean() );
+  fit -> SetParameter( 2, hScaleSum -> GetRMS() );
 
   // do fitting
-  hSum -> Fit(fName.data());
+  hScaleSum -> Fit(fName.data());
 
   // calculate mu / sigma
   const double mu  = fit -> GetParameter(1);
   const double sig = fit -> GetParameter(2);
   const double res = sig / mu;
 
+  /* TODO this might be where the 1/mu calc should go */
+
   // store outputs and return
-  m_hists.emplace_back( hSum.GetPtr() );
+  m_hists.emplace_back( hRawSum.GetPtr() );
+  m_hists.emplace_back( hScaleSum.GetPtr() );
   m_funcs.emplace_back( fit );
   return res;
 
@@ -208,13 +224,70 @@ double BHCalManualCalibrator::GetSigmaOverMu(
 
 
 // ----------------------------------------------------------------------------
-//! Get histogram index
+//! Build histogram definitions
 // ----------------------------------------------------------------------------
-std::size_t GetHistIndex() {
+void BHCalManualCalibrator::BuildHists() {
 
-  /* TODO fill in */
-  return 0;
+  /* TODO hist definition generation goes here
+   *   - 1d histograms to define
+   *     - esumhcal (method, epar)
+   *     - esumecal (method, epar)
+   *     - esumraw (method, epar)
+   *     - esumscale (method, epar, rel, norm)
+   *     - esumcorr (method, epar, rel, norm)
+   *   - 2d histograms to define (??)
+   *     - epar vs. esumhcal (method)
+   *     - epar vs. esumecal (method)
+   *     - esumhcal vs. esumecal (method, epar)
+   */
+  return;
 
-}  // end 'GetHistIndex()'
+}  // end 'BuildHists()'
+
+
+
+// ----------------------------------------------------------------------------
+//! Build graph definitions
+// ----------------------------------------------------------------------------
+void BHCalManualCalibrator::BuildGraphs() {
+
+  /* TODO graph hist definition goes here
+   *   - mu/sigma graphs to define: 
+   *      {rel, res}
+   *      {epar, rel, res}
+   *      {epar, reso}
+   *      {epar, ecalib}
+   *  - chi2 graphs to define:
+   *      ...
+   */
+  return;
+
+}  // end 'BuildGraphs()'
+
+
+
+// ----------------------------------------------------------------------------
+//! Build map of histogram indices
+// ----------------------------------------------------------------------------
+void BHCalManualCalibrator::BuildIndices() {
+
+  std::size_t iHist = 0;
+  for (std::size_t iPar = 0; iPar < m_cfg.ePar.size(); ++iPar) {
+    for (std::size_t iRel = 0; iRel < m_cfg.relValues.size(); ++iRel) {
+
+      // add mu/sigma indices
+      m_histIdxs[ std::make_tuple( Method::MuSigma, iPar, iRel, 0) ] = iHist;
+      ++iHist;
+
+      // add chi2 indices
+      for (std::size_t iNorm = 0; iNorm < m_cfg.normValues.size(); ++iNorm) {
+        m_histIdxs[ std::make_tuple( Method::Chi2, iPar, iRel, iNorm) ] = iHist;
+        ++iHist;
+      }  // end normalization loop
+    }  // end relative scale loop
+  }  // end particle bin loop
+  return;
+
+}  // end 'BuildIndices()'
 
 // end ========================================================================
