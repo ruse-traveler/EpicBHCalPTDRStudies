@@ -46,7 +46,7 @@ typedef std::vector<double> EneVec;
 typedef std::vector<Bin> BinVec;
 typedef std::map<HistIndex, std::size_t> IndexMap;
 typedef std::map<std::string, std::vector<HH::Definition>> HistDefs;
-typedef std::map<std::string, std::vector<GH::Definition>> GraphDefs;
+typedef std::map<std::string, std::map<std::string, GH::Definition>> GraphDefs;
 
 
 

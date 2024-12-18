@@ -109,6 +109,10 @@ void BHCalManualCalibrator::DoMuSigmaMinimization() {
 
     }
   }
+
+  // generate mu/sigma graphs
+  m_graphs.emplace_back( m_graphDefs["MuSigma"]["ResVsRel"].MakeTGraph() );
+  m_graph2Ds.emplace_back( m_graphDefs["MuSigma"]["ResVsRelVsPar"].MakeTGraph2D() );
   return;
 
 }  // end 'DoMuSigmaMinimization()'
@@ -211,6 +215,14 @@ double BHCalManualCalibrator::GetSigmaOverMu(
   const double sig = fit -> GetParameter(2);
   const double res = sig / mu;
 
+  // add points to graphs
+  m_graphDefs["MuSigma"]["ResVsRel"].AddPoint(
+    {rel, res}
+  );
+  m_graphDefs["MuSigma"]["ResVsRelVsPar"].AddPoint(
+    {m_cfg.ePar.at(iParBin), rel, res}
+  );
+
   /* TODO this might be where the 1/mu calc should go */
 
   // store outputs and return
@@ -260,6 +272,14 @@ void BHCalManualCalibrator::BuildGraphs() {
    *  - chi2 graphs to define:
    *      ...
    */
+
+  // make mu/sigma graphs
+  m_graphDefs["MuSigma"].insert(
+    {"ResVsRel", GH::Definition("gMuSigma_ResVsRel")}
+  );
+  m_graphDefs["MuSigma"].insert(
+    {"ResVsRelVsPar", GH::Definition("gMuSigma_ResVsRelVsPar")}
+  );
   return;
 
 }  // end 'BuildGraphs()'
