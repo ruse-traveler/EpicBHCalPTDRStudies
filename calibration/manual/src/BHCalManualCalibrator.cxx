@@ -110,8 +110,12 @@ void BHCalManualCalibrator::DoMuSigmaMinimization() {
     }
   }
 
+  // TODO minimia identification goes here
+
   // generate mu/sigma graphs
   m_graphs.emplace_back( m_graphDefs["MuSigma"]["ResVsRel"].MakeTGraph() );
+  m_graphs.emplace_back( m_graphDefs["MuSigma"]["MinResVsPar"].MakeTGraph() );
+  m_graphs.emplace_back( m_graphDefs["MuSigma"]["CalibVsPar"].MakeTGraph() );
   m_graph2Ds.emplace_back( m_graphDefs["MuSigma"]["ResVsRelVsPar"].MakeTGraph2D() );
   return;
 
@@ -242,6 +246,7 @@ void BHCalManualCalibrator::BuildHists() {
 
   /* TODO hist definition generation goes here
    *   - 1d histograms to define
+   *     - epar (method, epar) [sanity check]
    *     - esumhcal (method, epar)
    *     - esumecal (method, epar)
    *     - esumraw (method, epar)
@@ -264,21 +269,26 @@ void BHCalManualCalibrator::BuildHists() {
 void BHCalManualCalibrator::BuildGraphs() {
 
   /* TODO graph hist definition goes here
-   *   - mu/sigma graphs to define: 
-   *      {rel, res}
-   *      {epar, rel, res}
-   *      {epar, reso}
-   *      {epar, ecalib}
-   *  - chi2 graphs to define:
-   *      ...
+   *   - mu/sigma
+   *     ... also need 1/mu graphs
+   *   - chi2 graphs to define:
+   *     ...
    */
 
   // make mu/sigma graphs
+  //   - TODO might want ResVsRel to be only for minimizing Rel
+  //   - TODO or generate a ResVsRel graph for each energy
   m_graphDefs["MuSigma"].insert(
     {"ResVsRel", GH::Definition("gMuSigma_ResVsRel")}
   );
   m_graphDefs["MuSigma"].insert(
     {"ResVsRelVsPar", GH::Definition("gMuSigma_ResVsRelVsPar")}
+  );
+  m_graphDefs["MuSigma"].insert(
+    {"MinResVsPar", GH::Definition("gMuSigma_MinResVsPar")}
+  );
+  m_graphDefs["MuSigma"].insert(
+    {"CalibVsPar", GH::Definition("gMuSigma_CalibVsPar")}
   );
   return;
 
