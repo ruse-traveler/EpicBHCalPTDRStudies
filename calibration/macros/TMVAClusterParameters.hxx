@@ -199,6 +199,7 @@ namespace TMVAClusterParameters {
         "Kernel=Gaus",
         "UseKernel=F",
         "UseWeight=T",
+	"UseLDA=T",
         "!Trim"
       };
 
@@ -214,15 +215,17 @@ namespace TMVAClusterParameters {
         "!H",
         "!V",
         "VarTransform=Norm",
-        "NeuronType=tanh",
-        "NCycles=20000",
-        "HiddenLayers=N+20",
-        "TestRate=6",
-        "TrainingMethod=BFGS",
-        "Sampling=0.3",
-        "SamplingEpoch=0.8",
-        "ConvergenceImprove=1e-6",
-        "ConvergenceTests=15",
+        "NeuronType=ReLU",
+        "NCycles=200000",
+        "HiddenLayers=N-16",
+        "TestRate=10",
+        "TrainingMethod=BP",
+        "Sampling=1",
+        "SamplingEpoch=1",
+        "LearningRate=0.005",
+        "DecayRate=5e-6",
+        "ConvergenceImprove=1e-11",
+        "ConvergenceTests=25000",
         "!UseRegulator"
       };
 
