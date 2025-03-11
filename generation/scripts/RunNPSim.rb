@@ -9,12 +9,12 @@
 # -----------------------------------------------------------------------------
 
 # output file
-out_file = "test_ruby_script.edm4hep.root"
+out_file = "test.npsim_output.edm4hep.root"
 
 # simulation parameters
-numevts = 1000
-steerer = "../steering/steering.forTowerVsTileCalibCheck_e10th45pim.py"
-compact = "$DETECTOR_PATH/epic_imaging.xml"
+numevts = 100
+steerer = "../steering/SingleParticle/pion/central.e15pim.py"
+compact = "$DETECTOR_PATH/epic.xml"
 
 # run ddsim
 exec("npsim --steeringFile #{steerer} --compactFile #{compact} -G -N #{numevts} --outputFile #{out_file}")
