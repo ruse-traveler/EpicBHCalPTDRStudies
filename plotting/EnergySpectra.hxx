@@ -16,7 +16,7 @@
 #include <vector>
 #include <utility>
 // analysis utilities
-#include "../utilityPlotHelper.hxx"
+#include "../utility/PlotHelper.hxx"
 #include "../utility/HistHelper.hxx"
 
 // abbreviate common namespaces
