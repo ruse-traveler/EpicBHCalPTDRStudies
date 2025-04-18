@@ -17,8 +17,8 @@
 #include <vector>
 #include <utility>
 // analysis utilities
-#include "./PlotHelper.hxx"
-#include "../utils/HistHelper.hxx"
+#include "../utility/PlotHelper.hxx"
+#include "../utility/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace PH = PlotHelper;

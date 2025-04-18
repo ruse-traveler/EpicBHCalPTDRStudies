@@ -20,8 +20,8 @@
 #include <TF1.h>
 #include <TGraph.h>
 // analysis utilities
-#include "./PlotHelper.hxx"
-#include "../utils/GraphHelper.hxx"
+#include "../utility/PlotHelper.hxx"
+#include "../utility/HistHelper.hxx"
 
 // abbreviate common namespaces
 namespace GH = GraphHelper;
