@@ -29,9 +29,9 @@
 #include <TGraphErrors.h>
 #include <TTreeFormula.h>
 // analysis utilities
-#include "../../utility/HistHelper.hxx"
-#include "../../utility/GraphHelper.hxx"
-#include "../../utility/NTupleHelper.hxx"
+#include "../../../EpicBHCalPTDRStudies/utility/HistHelper.hxx"
+#include "../../../EpicBHCalPTDRStudies/utility/GraphHelper.hxx"
+#include "../../../EpicBHCalPTDRStudies/utility/NTupleHelper.hxx"
 
 
 
@@ -59,6 +59,10 @@ namespace BHCalOnlyHistograms {
     {
       "eSumBHCal",
       {"hESumBHCal", "", {"#SigmaE_{clust} [GeV]", "a.u."}, {bins.Get("energy")}}
+    },
+    {
+      "hLeadBHCal",
+      {"hEtaLeadBHCal", "", {"#eta_{clust}^{lead}", "a.u."}, {bins.Get("eta")}}
     }
   };
 
@@ -141,7 +145,10 @@ namespace BHCalOnlyHistograms {
   //! Options for histograms
   // --------------------------------------------------------------------------
   const bool   doNorm   = true;
+  const bool   doEtaCut = true;
   const double histNorm = 1.;
+  const double etaMin   = -1.1;
+  const double etaMax   = -0.1;
 
   // --------------------------------------------------------------------------
   //! Options for fits
@@ -265,6 +272,11 @@ namespace BHCalOnlyHistograms {
       return ((energy >= bin.first) && (energy < bin.second));
     };
 
+    // lambda to check if cluster eta is in cut
+    auto isInEtaCut = [](const double eta) {
+      return ((eta >= etaMin) && (eta < etaMax));
+    };
+
     // get number of entries
     const uint64_t nEntries = ntInput -> GetEntries();
     cout << "    Processing: " << nEntries << " events" << endl;
@@ -291,6 +303,9 @@ namespace BHCalOnlyHistograms {
       } else {
         nBytes += bytes;
       }
+
+      // if doing eta cut, check if in cut
+      if (doEtaCut && !isInEtaCut(helper.GetVariable("hLeadBHCal"))) continue;
 
       // fill histograms for each bin of particle energy
       for (std::size_t iBin = 0; iBin < par_bins.size(); ++iBin) {
