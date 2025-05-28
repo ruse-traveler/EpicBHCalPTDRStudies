@@ -22,8 +22,8 @@
 #include <TSystem.h>
 // podio libraries
 #include <podio/Frame.h>
+#include <podio/ROOTReader.h>
 #include <podio/CollectionBase.h>
-#include <podio/ROOTFrameReader.h>
 // edm4eic types
 #include <edm4eic/CalorimeterHitCollection.h>
 #include <edm4eic/ReconstructedParticleCollection.h>
@@ -65,7 +65,7 @@ void FillBHCalHitHistograms(const Options& opt = DefaultOptions) {
   // --------------------------------------------------------------------------
 
   // open file w/ frame reader
-  podio::ROOTFrameReader reader = podio::ROOTFrameReader();
+  podio::ROOTReader reader = podio::ROOTReader();
   reader.openFile( opt.in_file );
 
   // open output file
