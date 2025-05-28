@@ -24,18 +24,16 @@ END {
     "HcalBarrelRecHits",
     "HcalBarrelMergedHits",
     "HcalBarrelClusters",
-    "HcalBarrelSplitMergeClusters"
+    "HcalBarrelSplitMergeClusters",
+    "GeneratedParticles"
   ].compact.reject(&:empty?).join(',')
 
   # plugins to run in EICrecon
   plugins = [
-    "dump_flags"
   ].compact.reject(&:empty?).join(',')
 
   # options
   options = [
-  #  "-Pjana:nevents=100",
-    "-Peicrecon:LogLevel=trace"
   ].compact.reject(&:empty?).join(' ')
 
   # add relevant mapping/matrix
@@ -60,9 +58,9 @@ END {
 def make_phi_mapping(nmerge)
 
   map = if nmerge.to_i > 1
-    "\"phi-(#{nmerge}*((phi/#{nmerge})-floor(phi/#{nmerge})))\""
+    "\"phi:phi-(#{nmerge}*((phi/#{nmerge})-floor(phi/#{nmerge})))\""
   else
-    "phi"
+    "phi:phi"
   end
   return map
 
