@@ -51,6 +51,7 @@ struct Options {
   std::string image_clust;  // ecal (imaging) cluster/layer collection
   std::string image_hits;   // ecal (imaging) hit collection
   bool        do_progress;  // print progress through frame loop
+  bool        do_clust_cut; // require sum of hcal or ecal cluster energy to be nonzero
 } DefaultOptions = {
   "./forNewCalibWorkflow.evt5Ke10pim_central.d14m9y2024.podio.root",
   "forNewTrainingMacro_noNonzeroEvts_andDefinitePrimary.evt5Ke10pim_central.d14m9y2024.root",
@@ -61,7 +62,8 @@ struct Options {
   "EcalBarrelScFiRecHits",
   "EcalBarrelImagingLayers",
   "EcalBarrelImagingRecHits",
-  true
+  true,
+  false
 };
 
 
@@ -344,6 +346,11 @@ void FillBHCalClusterCalibrationTuple(const Options& opt = DefaultOptions) {
       eSumImage += iClust.getEnergy();
 
     }  // end imaging cluster loop
+
+    // if needed, apply cluster cut
+    if ( opt.do_clust_cut ) {
+      if ((eSumHCal <= 0.) && (eSumECal <= 0.)) continue;
+    }
 
     // fill imaging cluster variables
     helper.SetVariable( "nClustImage", (float) imageClusters.size() );
