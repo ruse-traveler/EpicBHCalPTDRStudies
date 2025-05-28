@@ -6,6 +6,9 @@
 #
 # This script generates the appropriate BHCal phi mapping and adjacency
 # matrix based on the provided number of tiles to merge into towers.
+#
+# NOTE: the `ClusterMergedHits` plugin needs to be compiled
+# beforehand.
 # =============================================================================
 
 
@@ -15,21 +18,23 @@
 END {
 
   # i/o parameters
-  in_ddsim   = "../input/forBHCalOnlyCheck.e10pim.file0.d30m10y2024.edm4hep.root"
-  out_podio  = "forTileMerger.afterReview_change0_removeMatrixMakers.d19m12y2024.podio.root"
-  out_plugin = "forTileMerger.afterReview_change0_removeMatrixMakers.d19m12y2024.plugin.root"
+  in_ddsim   = "output/forBHCalOnlyCheck_rerun.e1pim.file0.d18m5y2025.edm4hep.root"
+  out_podio  = "forHoleMystery.bhcalOnly_rerun_nMerge5_e1pim.d27m5y2025.podio.root"
+  out_plugin = "forHoleMystery.bhcalOnly_rerun_nMerge5_e1pim.d27m5y2025.plugin.root"
 
   # output collections from EICrecon
   out_collect = [
     "HcalBarrelRecHits",
     "HcalBarrelMergedHits",
     "HcalBarrelClusters",
+    "HcalBarrelMergedHitClusters",
     "HcalBarrelSplitMergeClusters",
     "GeneratedParticles"
   ].compact.reject(&:empty?).join(',')
 
   # plugins to run in EICrecon
   plugins = [
+    "ClusterMergedHits"
   ].compact.reject(&:empty?).join(',')
 
   # options
@@ -37,7 +42,7 @@ END {
   ].compact.reject(&:empty?).join(' ')
 
   # add relevant mapping/matrix
-  nmerge = if ARGV.empty? then 1 else ARGV[0] end 
+  nmerge = if ARGV.empty? then 5 else ARGV[0] end
   add_map_and_matrix_to_options(nmerge, options)
 
   # run EICrecon
@@ -112,7 +117,7 @@ def add_map_and_matrix_to_options(nmerge, options)
   mapping = make_phi_mapping(nmerge)
   matrix  = make_adjacency_matrix(nmerge)
   options.concat(" -PBHCAL:HcalBarrelMergedHits:fieldTransformations=#{mapping}")
-         .concat(" -PBHCAL:HcalBarrelIslandProtoClusters:adjacencyMatrix=#{matrix}")
+         .concat(" -PClusterMergedHits:HcalBarrelMergedHitIslandProtoClusters:adjacencyMatrix=#{matrix}")
 
 end
 
