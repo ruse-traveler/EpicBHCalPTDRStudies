@@ -40,12 +40,14 @@ struct Options {
   std::string gen_par;      // generated particles
   std::string hcal_clust;   // hcal cluster collection
   bool        do_progress;  // print progress through frame loop
+  bool        do_clust_cut; // require sum of cluster energy to be nonzero
 } DefaultOptions = {
   "./reco/forBHCalOnlyCheck.evt5Ke1pim_central.d31m10y2024.podio.root",
   "forBHCalOnlyCheck.evt5ke1pim_central.d31m10y2024.tuple.root",
   "GeneratedParticles",
   "HcalBarrelClusters",
-  true
+  true,
+  false
 };
 
 
@@ -167,6 +169,11 @@ void FillBHCalOnlyTuple(const Options& opt = DefaultOptions) {
       eSumHCal += hClust.getEnergy();
 
     }  // end hcal cluster loop
+
+    // if needed, apply cluster cut
+    if ( opt.do_clust_cut ) {
+      if (eSumHCal <= 0.) continue;
+    }
 
     // fill lead hcal cluster variables
     helper.SetVariable( "eLeadBHCal", hLeadClust.getEnergy() );
