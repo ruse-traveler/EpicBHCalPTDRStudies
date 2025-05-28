@@ -77,11 +77,7 @@ extern "C" {
       new JOmniFactoryGeneratorT<CalorimeterClusterRecoCoG_factory>(
          "HcalBarrelMergedHitClustersWithoutShapes",
         {"HcalBarrelMergedHitIslandProtoClusters",
-#if EIC_VERSION_MAJOR >= 7
          "HcalBarrelRawHitAssociations"},
-#else
-         "HcalBarrelHits"},
-#endif
         {"HcalBarrelMergedHitClustersWithoutShapes",
          "HcalBarrelMergedHitClusterAssociationsWithoutShapes"},
         {
