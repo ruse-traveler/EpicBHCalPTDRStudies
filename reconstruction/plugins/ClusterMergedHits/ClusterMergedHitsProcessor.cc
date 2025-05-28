@@ -110,44 +110,4 @@ extern "C" {
 
 }  // end extern "C"
 
-
-
-// ----------------------------------------------------------------------------
-//! Initialize plugin with global ROOT lock
-// ----------------------------------------------------------------------------
-void ClusterMergedHitsProcessor::InitWithGlobalRootLock(){
-
-  /* TODO likely don't need
-  auto rootfile_svc = GetApplication() -> GetService<RootFile_service>();
-  auto rootfile = rootfile_svc -> GetHistFile();
-  rootfile -> mkdir("ClusterMergedHits") -> cd();
-  */
-  return;
-
-}  // end 'InitWithGlobalRootLock()'
-
-
-
-// ----------------------------------------------------------------------------
-//! Process frames sequentially
-// ----------------------------------------------------------------------------
-void ClusterMergedHitsProcessor::ProcessSequential(const std::shared_ptr<const JEvent>& event) {
-
-  // TODO likely don't need
-  return;
-
-}  // end 'ProcessSequential(std::shared_ptr<JEvent>&)'
-
-
-
-// ----------------------------------------------------------------------------
-//! Finish plugin with global ROOT lock
-// ----------------------------------------------------------------------------
-void ClusterMergedHitsProcessor::FinishWithGlobalRootLock() {
-
-  // TODO likely don't need
-  return;
-
-}  // end 'FinishWithGlobalRootLock()'
-
 /// end =======================================================================

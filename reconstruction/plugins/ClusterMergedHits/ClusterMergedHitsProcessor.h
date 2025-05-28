@@ -22,19 +22,10 @@
  */
 class ClusterMergedHitsProcessor : public JEventProcessorSequentialRoot {
 
-  private:
-
-    /* TODO put any things here */
-
   public:
 
     // ctor
     ClusterMergedHitsProcessor() { SetTypeName(NAME_OF_THIS); }
-
-    // inherited plugin methods
-    void InitWithGlobalRootLock() override;
-    void ProcessSequential(const std::shared_ptr<const JEvent>& event) override;
-    void FinishWithGlobalRootLock() override;
 
 };  // end ClusterMergedHitsProcessor
 
