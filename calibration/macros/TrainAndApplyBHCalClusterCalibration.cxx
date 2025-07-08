@@ -30,10 +30,11 @@
 #include <TMVA/Factory.h>
 #include <TMVA/DataLoader.h>
 // analysis utilities
-#include "TMVAClusterParameters.hxx"
-#include "../../utility/TMVAHelper.hxx"
-#include "../../utility/NTupleHelper.hxx"
+#include <utility/TMVAHelper.hxx>
+#include <utility/NTupleHelper.hxx>
 
+// calculation parameters
+#include "TMVAClusterParameters.hxx"
 
 
 // ============================================================================

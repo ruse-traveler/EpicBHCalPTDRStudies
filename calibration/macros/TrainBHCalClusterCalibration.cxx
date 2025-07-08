@@ -28,8 +28,10 @@
 #include <TMVA/Factory.h>
 #include <TMVA/DataLoader.h>
 // analysis utilities
+#include <utility/TMVAHelper.hxx>
+
+// calculation parameters
 #include "TMVAClusterParameters.hxx"
-#include "../../utility/TMVAHelper.hxx"
 
 
 
