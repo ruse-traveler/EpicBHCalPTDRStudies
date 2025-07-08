@@ -17,5 +17,11 @@ the ePIC pTDR. It is structured like so:
   - `utility`: this directory holds a variety of useful tools
     like the `eic-build` script.
 
+Before running, make sure to source `bin/bhcal-this.sh` from the
+top directory of this repository. This will add the path to the
+repository to your `PATH` and `ROOT_INCLUDE_PATH`, and the path
+to the plotter `src` (the only compiled code in the repository)
+to your `LD_LIBRARY_PATH` and `ROOT_LIBRARY_PATH`.
+
 **NOTE:** the code here will eventually be integrated into a
 repository under the [eic GitHub organization](https://github.com/eic).
