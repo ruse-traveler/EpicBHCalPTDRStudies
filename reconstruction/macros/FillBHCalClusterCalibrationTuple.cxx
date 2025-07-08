@@ -33,7 +33,7 @@
 #include <edm4hep/Vector3f.h>
 #include <edm4hep/utils/vector_utils.h>
 // analysis utilities
-#include "../../utility/NTupleHelper.hxx"
+#include <utility/NTupleHelper.hxx>
 
 
 

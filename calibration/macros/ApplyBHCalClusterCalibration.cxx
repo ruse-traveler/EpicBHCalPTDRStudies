@@ -27,9 +27,10 @@
 // tmva components
 #include <TMVA/Reader.h>
 // analysis utilities
+#include <utility/TMVAHelper.hxx>
+#include <utility/NTupleHelper.hxx>
+// calculation parameters
 #include "TMVAClusterParameters.hxx"
-#include "../../utility/TMVAHelper.hxx"
-#include "../../utility/NTupleHelper.hxx"
 
 
 

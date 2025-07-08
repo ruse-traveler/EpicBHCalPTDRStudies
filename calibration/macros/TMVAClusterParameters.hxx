@@ -21,7 +21,7 @@
 // tmva components
 #include <TMVA/Types.h>
 // analysis utilities
-#include "../../utility/TMVAHelper.hxx"
+#include <utility/TMVAHelper.hxx>
 
 
 

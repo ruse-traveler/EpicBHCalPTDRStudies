@@ -29,9 +29,9 @@
 #include <TGraphErrors.h>
 #include <TTreeFormula.h>
 // analysis utilities
-#include "../../utility/HistHelper.hxx"
-#include "../../utility/GraphHelper.hxx"
-#include "../../utility/NTupleHelper.hxx"
+#include <utility/HistHelper.hxx>
+#include <utility/GraphHelper.hxx>
+#include <utility/NTupleHelper.hxx>
 
 
 

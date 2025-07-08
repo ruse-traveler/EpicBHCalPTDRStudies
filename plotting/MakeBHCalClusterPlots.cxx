@@ -17,8 +17,11 @@
 #include <TFile.h>
 #include <TSystem.h>
 // analysis utilities
-#include "../utility/PlotHelper.hxx"
+#include <utility/PlotHelper.hxx>
+
+// plotter definition
 #include "./src/BHCalPlotter.hxx"
+
 // plotting options
 #include "./BaseOptions.hxx"
 #include "./EnergySpectra.hxx"
