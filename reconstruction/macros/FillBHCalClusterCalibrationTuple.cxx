@@ -53,8 +53,8 @@ struct Options {
   bool        do_progress;  // print progress through frame loop
   bool        do_clust_cut; // require sum of hcal or ecal cluster energy to be nonzero
 } DefaultOptions = {
-  "./forNewCalibWorkflow.evt5Ke10pim_central.d14m9y2024.podio.root",
-  "forNewTrainingMacro_noNonzeroEvts_andDefinitePrimary.evt5Ke10pim_central.d14m9y2024.root",
+  "./forNeuDebug.epic25080e0510z0th33neu_merged.edm4eic.root",
+  "forNeuDebug.epic25080e0510z0th33neu.tuple.root",
   "GeneratedParticles",
   "HcalBarrelClusters",
   "EcalBarrelClusters",
@@ -62,7 +62,7 @@ struct Options {
   "EcalBarrelScFiRecHits",
   "EcalBarrelImagingLayers",
   "EcalBarrelImagingRecHits",
-  true,
+  false,
   false
 };
 
@@ -80,6 +80,8 @@ void FillBHCalClusterCalibrationTuple(const Options& opt = DefaultOptions) {
   // output variables
   NTupleHelper helper({
     "ePar",
+    "mPar",
+    "eKinPar",
     "fracParVsLeadBHCal",
     "fracParVsLeadBEMC",
     "fracParVsSumBHCal",
@@ -212,6 +214,8 @@ void FillBHCalClusterCalibrationTuple(const Options& opt = DefaultOptions) {
 
     // set particle output variables
     helper.SetVariable( "ePar", primary.getEnergy() );
+    helper.SetVariable( "mPar", primary.getMass() );
+    helper.SetVariable( "eKinPar", primary.getEnergy() - primary.getMass() );
 
     // ------------------------------------------------------------------------
     // hcal cluster loop
