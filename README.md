@@ -1,5 +1,8 @@
 # ePIC BHCal pTDR Studies
 
+**NOTE:** this repository will be archived on 11.24.2025. This code base
+is now maintained at [eic/BHCalPTDRStuides](https://github.com/eic/BHCalPTDRStudies).
+
 This repository tracks code used in studies for the BHCal chapter of
 the ePIC pTDR. It is structured like so:
 
@@ -22,6 +25,3 @@ top directory of this repository. This will add the path to the
 repository to your `PATH` and `ROOT_INCLUDE_PATH`, and the path
 to the plotter `src` (the only compiled code in the repository)
 to your `LD_LIBRARY_PATH` and `ROOT_LIBRARY_PATH`.
-
-**NOTE:** the code here will eventually be integrated into a
-repository under the [eic GitHub organization](https://github.com/eic).
