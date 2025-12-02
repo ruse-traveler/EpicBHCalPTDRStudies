@@ -1,6 +1,6 @@
 # ePIC BHCal pTDR Studies
 
-**NOTE:** this repository will be archived on 11.24.2025. This code base
+**NOTE:** this repository is a public archive. This code base
 is now maintained at [eic/BHCalPTDRStuides](https://github.com/eic/BHCalPTDRStudies).
 
 This repository tracks code used in studies for the BHCal chapter of
